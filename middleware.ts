@@ -5,6 +5,7 @@ import { getSupabasePublicEnv } from "@/lib/supabase/env";
 function isPublicPath(pathname: string): boolean {
   return (
     pathname === "/login" ||
+    pathname === "/signup" ||
     pathname.startsWith("/auth/callback") ||
     pathname.startsWith("/auth/confirm")
   );
@@ -53,7 +54,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (user && pathname === "/login") {
+  if (user && (pathname === "/login" || pathname === "/signup")) {
     const redirectUrl = request.nextUrl.clone();
     const nextParam = request.nextUrl.searchParams.get("next");
     if (nextParam?.startsWith("/") && !nextParam.startsWith("//")) {

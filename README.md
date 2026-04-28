@@ -1,50 +1,91 @@
 # Segwitz Knowledge Base
 
-Internal Next.js 14 document library with Supabase (Auth + Postgres + Storage).
+Production-style Next.js 14 knowledge base with **Supabase** (Auth, Postgres, Storage) and **Tailwind CSS**.
+
+## Prerequisites
+
+- Node.js 18+
+- A Supabase project (`NEXT_PUBLIC_*` keys from Dashboard → Settings → API)
+
+## Environment variables
+
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase API URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon (public) key |
+| `NEXT_PUBLIC_SITE_URL` | Recommended on Vercel | Canonical URL for metadata and OAuth (`https://your-app.vercel.app`) |
+
+Copy `.env.example` → `.env.local` and fill in values.
 
 ## Quick start
 
 ```bash
 npm install
 cp .env.example .env.local
-# Paste NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY from Supabase Dashboard → Settings → API
+# Edit .env.local with your Supabase credentials
 npm run dev
 ```
 
-Open **[http://localhost:3000](http://localhost:3000)** (Next.js default port).
+The dev server listens on **`http://localhost:3000`**.
 
-If styles look wrong after changing CSS: stop the dev server, run `rm -rf .next`, run `npm run dev` again, hard-refresh the browser (`Cmd+Shift+R`).
+### If you see ERR_CONNECTION_REFUSED on localhost:3000
 
-## Database
-
-Apply migrations (Supabase CLI or Dashboard SQL):
+Nothing is listening on that port until you run `npm run dev`. If the port is already taken, either stop the other process or run:
 
 ```bash
-supabase db push   # when linked to your project
+PORT=3001 npm run dev
 ```
 
-Migrations live in `supabase/migrations/`.
+Then open `http://localhost:3001`.
+
+### Styles look wrong
+
+1. Confirm `app/layout.tsx` imports `./globals.css`.
+2. Stop dev, delete `.next`: `rm -rf .next`, restart `npm run dev`, hard-refresh (`Cmd+Shift+R`).
+
+## Database & Storage
+
+Apply SQL migrations (Supabase CLI linked to your project):
+
+```bash
+supabase db push
+```
+
+Or run files in `supabase/migrations/` in order in the Supabase SQL editor.
+
+Ensure a **Storage bucket** named `documents` exists (migration should create policies; verify in Dashboard → Storage).
+
+## Auth routes
+
+- **`/login`** — email & password sign-in
+- **`/signup`** — new account (profiles row is created by DB trigger; role defaults to member)
+- **`/auth/callback`** — OAuth / email link code exchange (configured in Supabase Auth URL settings)
+
+Add `http://localhost:3000/auth/callback` (and your production URL callback) under **Authentication → URL Configuration** in Supabase.
+
+## Document upload
+
+Admins and managers can **Upload document** from `/documents/new`. Files are stored in the `documents` bucket; metadata lives in the `documents` table (see `lib/storage/document-storage.ts` and server actions in `app/(dashboard)/documents/actions.ts`).
 
 ## Scripts
 
 | Command | Purpose |
 |---------|---------|
-| `npm run dev` | Dev server at port **3000** (`PORT=3040 npm run dev` for another port) |
-| `npm run build` | Production build (runs Tailwind / PostCSS — must succeed for deploy) |
-| `npm run start` | Run production build locally |
+| `npm run dev` | Dev server on port **3000** |
+| `npm run build` | Production build — must pass before Vercel deploy |
+| `npm run start` | Run production build on port **3000** |
 | `npm run lint` | ESLint |
 
-## Styling (Tailwind CSS)
+## Deploy on Vercel
 
-- Global styles: `app/globals.css` (`@tailwind base/components/utilities`)
-- Root layout imports: `app/layout.tsx` → `import "./globals.css"`
-- Config: `tailwind.config.ts`, PostCSS: `postcss.config.mjs`
+1. Push the repo to GitHub.
+2. Import the project in Vercel; set env vars (match `.env.example`).
+3. Set **`NEXT_PUBLIC_SITE_URL`** to `https://your-deployment.vercel.app` (or custom domain).
+4. Add the same production URL + `/auth/callback` in Supabase redirect allow list.
 
-## Deploy (e.g. GitHub + Vercel)
+## Tech stack
 
-1. Push this repository to GitHub.
-2. Import the repo in Vercel; set the same `NEXT_PUBLIC_*` env vars.
-3. Add your Vercel URL to Supabase **Authentication → URL Configuration** (redirect URLs).
+Next.js App Router · Supabase SSR (`@supabase/ssr`) · Tailwind CSS · TypeScript
 
 ## License
 

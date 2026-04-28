@@ -8,6 +8,15 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      keyframes: {
+        "upload-bar": {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(260%)" },
+        },
+      },
+      animation: {
+        "upload-bar": "upload-bar 1.1s ease-in-out infinite",
+      },
       colors: {
         surface: {
           DEFAULT: "hsl(var(--surface) / <alpha-value>)",

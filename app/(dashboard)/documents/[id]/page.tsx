@@ -20,7 +20,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function DocumentDetailPage({ params }: Props) {
+export default async function DocumentDetailPage({
+  params,
+  searchParams,
+}: {
+  params: { id: string };
+  searchParams: Record<string, string | string[] | undefined>;
+}) {
   const [{ profile }, doc] = await Promise.all([
     getCachedSessionProfile(),
     getDocumentDetail(params.id),
@@ -29,6 +35,18 @@ export default async function DocumentDetailPage({ params }: Props) {
   if (!doc) {
     notFound();
   }
+
+  const updatedRaw = searchParams.updated;
+  const updatedFlag =
+    typeof updatedRaw === "string"
+      ? updatedRaw
+      : Array.isArray(updatedRaw)
+        ? updatedRaw[0]
+        : undefined;
+  const showUpdated =
+    updatedFlag === "success" ||
+    updatedFlag === "1" ||
+    updatedFlag === "true";
 
   const canManage =
     profile.role === "admin" || profile.role === "manager";
@@ -57,6 +75,23 @@ export default async function DocumentDetailPage({ params }: Props) {
             {doc.title}
           </span>
         </nav>
+
+        {showUpdated ? (
+          <div
+            className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-emerald-500/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-950 dark:text-emerald-50"
+            role="status"
+          >
+            <p className="font-semibold">
+              Changes saved successfully.
+            </p>
+            <Link
+              href={`/documents/${doc.id}`}
+              className="shrink-0 font-medium text-emerald-800 underline-offset-4 hover:underline dark:text-emerald-200"
+            >
+              Dismiss
+            </Link>
+          </div>
+        ) : null}
 
         <header className="flex flex-col gap-4 border-b border-border-subtle pb-8 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 space-y-2">

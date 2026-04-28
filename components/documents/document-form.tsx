@@ -107,7 +107,13 @@ export function DocumentForm(props: Props) {
         return;
       }
 
-      router.push("/documents?uploaded=success");
+      if (props.mode === "create") {
+        router.push("/documents?uploaded=success");
+      } else if (doc) {
+        router.push(`/documents/${doc.id}?updated=success`);
+      } else {
+        router.push("/documents");
+      }
       router.refresh();
     });
   }
@@ -121,9 +127,6 @@ export function DocumentForm(props: Props) {
     props.mode === "edit" ? new Set(props.selectedTagIds) : new Set<string>();
 
   const submitVerb = props.mode === "create" ? "Upload" : "Save";
-  const canSubmit =
-    props.mode !== "create" ||
-    props.allowSubmit !== false;
 
   const fieldDisabled =
     pending || (props.mode === "create" && props.allowSubmit === false);
@@ -132,9 +135,26 @@ export function DocumentForm(props: Props) {
     <form
       encType="multipart/form-data"
       onSubmit={onSubmit}
-      className="space-y-8"
+      className="relative space-y-8"
       aria-busy={pending}
     >
+      {pending ? (
+        <div
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-gray-950/40 backdrop-blur-sm dark:bg-slate-950/60"
+          role="progressbar"
+          aria-valuetext={props.mode === "create" ? "Uploading PDF" : "Saving document"}
+          aria-busy="true"
+        >
+          <div className="h-1 w-56 overflow-hidden rounded-full bg-white/40 dark:bg-slate-700/80">
+            <div className="h-full w-1/3 animate-upload-bar rounded-full bg-accent" />
+          </div>
+          <p className="rounded-lg bg-white/95 px-4 py-2 text-sm font-medium text-gray-900 shadow-lg dark:bg-slate-900 dark:text-slate-50">
+            {props.mode === "create"
+              ? "Uploading PDF and saving metadata…"
+              : "Saving changes…"}
+          </p>
+        </div>
+      ) : null}
       {error ? (
         <p
           className="rounded-md border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-700 dark:text-red-300"

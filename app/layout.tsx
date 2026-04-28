@@ -3,10 +3,9 @@ import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-});
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
 export const metadata: Metadata = {
   title: {
@@ -14,12 +13,18 @@ export const metadata: Metadata = {
     template: "%s · Segwitz KB",
   },
   description: "Internal knowledge base and document management",
+  metadataBase: new URL(siteUrl),
 };
 
 export const viewport = {
   width: "device-width",
   initialScale: 1,
 };
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+});
 
 export default function RootLayout({
   children,

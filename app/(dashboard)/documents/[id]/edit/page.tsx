@@ -39,17 +39,19 @@ export default async function EditDocumentPage({ params }: Props) {
 
   return (
     <main className="px-6 py-8 lg:px-10">
-      <PageHeader
-        title="Edit document"
-        description="Update metadata or replace the PDF in storage."
-      />
-      <DocumentForm
-        mode="edit"
-        document={document}
-        selectedTagIds={selectedTagIds}
-        options={options}
-        currentUserProfileId={profile.id}
-      />
+      <div className="mx-auto max-w-3xl">
+        <PageHeader
+          title="Edit document"
+          description="Update metadata or replace the PDF in storage."
+        />
+        <DocumentForm
+          mode="edit"
+          document={document}
+          selectedTagIds={selectedTagIds}
+          options={options}
+          currentUserProfileId={profile.id}
+        />
+      </div>
     </main>
   );
 }

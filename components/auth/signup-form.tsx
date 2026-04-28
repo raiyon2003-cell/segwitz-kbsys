@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   Button,
   Card,
@@ -15,48 +15,32 @@ import {
 } from "@/components/ui";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-export function LoginForm() {
+export function SignupForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-
-  const nextPathRaw = searchParams.get("next");
-  /** Never send users back to /login after a successful sign-in (avoids odd redirects). */
-  const safeNext = ((): string => {
-    const raw = nextPathRaw?.trim();
-    if (
-      !raw ||
-      !raw.startsWith("/") ||
-      raw.startsWith("//") ||
-      raw.startsWith("/login") ||
-      raw.startsWith("/signup")
-    ) {
-      return "/";
-    }
-    return raw;
-  })();
-
-  const oauthError = searchParams.get("error");
-
-  useEffect(() => {
-    if (oauthError) setError(oauthError);
-  }, [oauthError]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    setInfo(null);
     setPending(true);
 
     const form = event.currentTarget;
     const fd = new FormData(form);
     const email = String(fd.get("email") ?? "").trim();
     const password = String(fd.get("password") ?? "");
+    const fullName = String(fd.get("full_name") ?? "").trim();
 
     const supabase = createSupabaseBrowserClient();
-    const { error: signError } = await supabase.auth.signInWithPassword({
+    const { data, error: signError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: fullName ? { full_name: fullName, name: fullName } : undefined,
+      },
     });
 
     setPending(false);
@@ -66,19 +50,23 @@ export function LoginForm() {
       return;
     }
 
-    // Full navigation so the SSR stack (middleware + server) sees auth cookies reliably,
-    // and we stay on the same origin/port as this tab (fixes 404 when another process
-    // is bound to a different localhost port).
-    router.refresh();
-    window.location.assign(safeNext);
+    if (data.session) {
+      router.refresh();
+      router.replace("/");
+      return;
+    }
+
+    setInfo(
+      "Check your email to confirm your account, then sign in. If confirmation is disabled in Supabase, you can sign in now.",
+    );
   }
 
   return (
     <Card className="border-border-subtle shadow-[0_8px_40px_-12px_rgb(15_23_42/12%)]">
       <CardHeader>
-        <CardTitle>Sign in</CardTitle>
+        <CardTitle>Create account</CardTitle>
         <CardDescription>
-          Sign in with your work email and password.
+          Use your work email. Your role defaults to member until an admin assigns a higher role.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -91,6 +79,22 @@ export function LoginForm() {
               {error}
             </p>
           ) : null}
+          {info ? (
+            <p
+              className="rounded-md border border-emerald-500/35 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-900 dark:text-emerald-50"
+              role="status"
+            >
+              {info}
+            </p>
+          ) : null}
+          <Input
+            name="full_name"
+            type="text"
+            label="Full name"
+            placeholder="Ada Lovelace"
+            autoComplete="name"
+            disabled={pending}
+          />
           <Input
             name="email"
             type="email"
@@ -105,27 +109,28 @@ export function LoginForm() {
             type="password"
             label="Password"
             placeholder="••••••••"
-            autoComplete="current-password"
+            autoComplete="new-password"
+            minLength={8}
             required
             disabled={pending}
           />
           <Button type="submit" className="w-full" size="lg" disabled={pending}>
-            {pending ? "Signing in…" : "Continue"}
+            {pending ? "Creating account…" : "Sign up"}
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="flex-col gap-2 border-0 pt-0">
+      <CardFooter className="flex-col gap-3 border-0 pt-0">
         <p className="text-center text-sm text-foreground-muted">
-          New here?{" "}
+          Already have an account?{" "}
           <Link
-            href="/signup"
+            href="/login"
             className="font-medium text-accent underline-offset-4 hover:underline"
           >
-            Create an account
+            Sign in
           </Link>
         </p>
         <p className="text-center text-xs text-foreground-muted">
-          Internal use only. Roles are assigned by an administrator.
+          Internal directory sign-up — contact an administrator for role changes.
         </p>
       </CardFooter>
     </Card>
