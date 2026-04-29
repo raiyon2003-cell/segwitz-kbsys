@@ -8,7 +8,10 @@ import {
   tryLogDocumentActivities,
   tryLogDocumentActivity,
 } from "@/lib/activity";
-import { guardDocumentEditor } from "@/lib/auth/guard-document-editor";
+import {
+  guardDocumentEditor,
+  guardDocumentUploader,
+} from "@/lib/auth/guard-document-editor";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   buildDocumentStoragePath,
@@ -137,7 +140,7 @@ async function syncDocumentTags(
 export async function createDocument(
   formData: FormData,
 ): Promise<ActionResult<{ id: string }>> {
-  const gate = await guardDocumentEditor();
+  const gate = await guardDocumentUploader();
   if (gate.denied) return { ok: false, error: gate.message };
 
   const file = formData.get("file");

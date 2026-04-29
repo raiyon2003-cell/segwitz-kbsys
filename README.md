@@ -79,9 +79,15 @@ Admins and managers can **Upload document** from `/documents/new`. Files are sto
 ## Deploy on Vercel
 
 1. Push the repo to GitHub.
-2. Import the project in Vercel; set env vars (match `.env.example`).
-3. Set **`NEXT_PUBLIC_SITE_URL`** to `https://your-deployment.vercel.app` (or custom domain).
-4. Add the same production URL + `/auth/callback` in Supabase redirect allow list.
+2. Import the project in Vercel.
+3. **Required:** In **Project → Settings → Environment Variables**, add (for **Production** and **Preview** at minimum):
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`  
+   Use the same values as in your Supabase project (**Settings → API**). Redeploy after saving.
+4. Set **`NEXT_PUBLIC_SITE_URL`** to `https://your-deployment.vercel.app` (or custom domain).
+5. In Supabase → **Authentication → URL Configuration**, add your Vercel URL and `https://your-app.vercel.app/auth/callback` to redirect URLs.
+
+If you see **`500`** / **`MIDDLEWARE_INVOCATION_FAILED`**, the usual cause is missing Supabase env vars on Vercel. Middleware runs on every request and needs those keys. After setting them, trigger a new deployment.
 
 ## Tech stack
 

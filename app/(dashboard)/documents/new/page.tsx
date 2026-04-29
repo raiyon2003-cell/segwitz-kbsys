@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DocumentForm } from "@/components/documents/document-form";
 import { PageHeader } from "@/components/layout/page-header";
-import { guardDocumentEditor } from "@/lib/auth/guard-document-editor";
+import { guardDocumentUploader } from "@/lib/auth/guard-document-editor";
 import { getCachedSessionProfile } from "@/lib/auth/session";
 import { loadDocumentFormOptions } from "@/lib/data/document-form-options";
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NewDocumentPage() {
-  const gate = await guardDocumentEditor();
+  const gate = await guardDocumentUploader();
   if (gate.denied) {
     redirect("/documents");
   }

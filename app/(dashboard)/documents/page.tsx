@@ -44,7 +44,12 @@ export default async function DocumentsPage({
     getDocumentsPaginated(parsed),
   ]);
 
-  const canManage =
+  const canUpload =
+    profile.role === "admin" ||
+    profile.role === "manager" ||
+    profile.role === "member";
+
+  const canManageDocs =
     profile.role === "admin" || profile.role === "manager";
 
   const { rows, total, page: currentPage, pageSize } = pageResult;
@@ -122,18 +127,17 @@ export default async function DocumentsPage({
             title="Documents"
             description="Search and filter your knowledge base like a modern workspace."
           />
-          {canManage ? (
+          {canUpload ? (
             <Link href="/documents/new">
               <Button>Upload document</Button>
             </Link>
           ) : null}
         </div>
 
-        {!canManage ? (
+        {!canUpload ? (
           <div className="rounded-lg border border-border-subtle bg-surface-muted/40 px-4 py-3 text-sm text-foreground-muted">
-            <strong className="text-foreground">View-only.</strong> Only
-            administrators and managers can upload documents. Ask an admin if
-            you need upload access.
+            <strong className="text-foreground">View-only.</strong> Your role
+            cannot upload documents. Ask an admin if you need upload access.
           </div>
         ) : null}
 
@@ -198,7 +202,7 @@ export default async function DocumentsPage({
                     No documents match these filters.
                   </p>
                 ) : (
-                  <DocumentsGrid rows={rows} canManage={canManage} />
+                  <DocumentsGrid rows={rows} canManage={canManageDocs} />
                 )
               ) : rows.length === 0 ? (
                 <p className="rounded-xl border border-dashed border-border-subtle bg-surface-muted/30 py-16 text-center text-sm text-foreground-muted">
@@ -209,7 +213,7 @@ export default async function DocumentsPage({
                   rows={rows}
                   columns={columns}
                   actions={
-                    canManage
+                    canManageDocs
                       ? (row) => (
                           <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
                             <Link

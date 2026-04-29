@@ -11,14 +11,44 @@ function isPublicPath(pathname: string): boolean {
   );
 }
 
+function missingEnvResponse() {
+  return new NextResponse(
+    [
+      "Configuration error: Supabase environment variables are not set.",
+      "",
+      "Add these in Vercel → Project → Settings → Environment Variables (for Production, Preview, and Development as needed):",
+      "  NEXT_PUBLIC_SUPABASE_URL",
+      "  NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "",
+      "Redeploy after saving. Values come from Supabase → Project Settings → API.",
+    ].join("\n"),
+    {
+      status: 503,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+      },
+    },
+  );
+}
+
 export async function middleware(request: NextRequest) {
+  let supabaseUrl: string;
+  let supabaseAnonKey: string;
+
+  try {
+    const env = getSupabasePublicEnv();
+    supabaseUrl = env.url;
+    supabaseAnonKey = env.key;
+  } catch {
+    return missingEnvResponse();
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   });
-
-  const { url: supabaseUrl, key: supabaseAnonKey } = getSupabasePublicEnv();
 
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
