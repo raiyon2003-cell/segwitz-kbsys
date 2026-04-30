@@ -23,7 +23,8 @@ export default async function EditTagPage({ params }: Props) {
   if (!record) notFound();
 
   const { profile } = await getCachedSessionProfile();
-  const isAdmin = profile.role === "admin";
+  const canMutateRefs =
+    profile.role === "admin" || profile.role === "member";
 
   return (
     <main className="px-6 py-8 lg:px-10">
@@ -36,7 +37,7 @@ export default async function EditTagPage({ params }: Props) {
           <Link href="/tags">
             <Button variant="outline">Back to list</Button>
           </Link>
-          {isAdmin ? (
+          {canMutateRefs ? (
             <ResourceDeleteButton
               id={record.id}
               deleteAction={deleteTag}
@@ -47,7 +48,7 @@ export default async function EditTagPage({ params }: Props) {
         </div>
       </div>
 
-      {isAdmin ? (
+      {canMutateRefs ? (
         <TagForm mode="edit" record={record} />
       ) : (
         <p className="text-sm text-foreground-muted">

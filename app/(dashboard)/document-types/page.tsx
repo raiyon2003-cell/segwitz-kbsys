@@ -17,7 +17,8 @@ export default async function DocumentTypesPage({
   const page = parsePageParam(searchParams);
 
   const { profile } = await getCachedSessionProfile();
-  const isAdmin = profile.role === "admin";
+  const canMutateRefs =
+    profile.role === "admin" || profile.role === "member";
 
   const { rows, total, page: currentPage, pageSize } =
     await getDocumentTypesPaginated(page);
@@ -54,7 +55,7 @@ export default async function DocumentTypesPage({
           title="Document types"
           description="Templates and taxonomy used when classifying uploaded documents."
         />
-        {isAdmin ? (
+        {canMutateRefs ? (
           <Link href="/document-types/new">
             <Button>Add document type</Button>
           </Link>
@@ -67,7 +68,7 @@ export default async function DocumentTypesPage({
             rows={rows}
             columns={columns}
             actions={
-              isAdmin
+              canMutateRefs
                 ? (row) => (
                     <Link
                       href={`/document-types/${row.id}/edit`}

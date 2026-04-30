@@ -17,7 +17,8 @@ export default async function ProcessCategoriesPage({
   const page = parsePageParam(searchParams);
 
   const { profile } = await getCachedSessionProfile();
-  const isAdmin = profile.role === "admin";
+  const canMutateRefs =
+    profile.role === "admin" || profile.role === "member";
 
   const { rows, total, page: currentPage, pageSize } =
     await getProcessCategoriesPaginated(page);
@@ -54,7 +55,7 @@ export default async function ProcessCategoriesPage({
           title="Process categories"
           description="Group operational processes for discovery and linking to documents."
         />
-        {isAdmin ? (
+        {canMutateRefs ? (
           <Link href="/process-categories/new">
             <Button>Add process category</Button>
           </Link>
@@ -67,7 +68,7 @@ export default async function ProcessCategoriesPage({
             rows={rows}
             columns={columns}
             actions={
-              isAdmin
+              canMutateRefs
                 ? (row) => (
                     <Link
                       href={`/process-categories/${row.id}/edit`}

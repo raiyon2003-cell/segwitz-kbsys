@@ -7,10 +7,11 @@ export async function guardAdminMutation(): Promise<
   | { denied: false }
 > {
   const { profile } = await getCachedSessionProfile();
-  if (profile.role !== "admin") {
+  if (profile.role !== "admin" && profile.role !== "member") {
     return {
       denied: true,
-      message: "Only administrators can modify this resource.",
+      message:
+        "Only administrators and members can modify this resource.",
     };
   }
   return { denied: false };

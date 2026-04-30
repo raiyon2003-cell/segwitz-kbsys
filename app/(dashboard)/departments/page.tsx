@@ -17,7 +17,8 @@ export default async function DepartmentsPage({
   const page = parsePageParam(searchParams);
 
   const { profile } = await getCachedSessionProfile();
-  const isAdmin = profile.role === "admin";
+  const canMutateRefs =
+    profile.role === "admin" || profile.role === "member";
 
   const { rows, total, page: currentPage, pageSize } =
     await getDepartmentsPaginated(page);
@@ -60,7 +61,7 @@ export default async function DepartmentsPage({
           title="Departments"
           description="Functional teams within divisions — linked for routing and reporting."
         />
-        {isAdmin ? (
+        {canMutateRefs ? (
           <Link href="/departments/new">
             <Button>Add department</Button>
           </Link>
@@ -73,7 +74,7 @@ export default async function DepartmentsPage({
             rows={rows}
             columns={columns}
             actions={
-              isAdmin
+              canMutateRefs
                 ? (row) => (
                     <Link
                       href={`/departments/${row.id}/edit`}

@@ -28,7 +28,8 @@ export default async function EditDepartmentPage({ params }: Props) {
   if (!department) notFound();
 
   const { profile } = await getCachedSessionProfile();
-  const isAdmin = profile.role === "admin";
+  const canMutateRefs =
+    profile.role === "admin" || profile.role === "member";
 
   return (
     <main className="px-6 py-8 lg:px-10">
@@ -41,7 +42,7 @@ export default async function EditDepartmentPage({ params }: Props) {
           <Link href="/departments">
             <Button variant="outline">Back to list</Button>
           </Link>
-          {isAdmin ? (
+          {canMutateRefs ? (
             <ResourceDeleteButton
               id={department.id}
               deleteAction={deleteDepartment}
@@ -52,7 +53,7 @@ export default async function EditDepartmentPage({ params }: Props) {
         </div>
       </div>
 
-      {isAdmin ? (
+      {canMutateRefs ? (
         <DepartmentForm
           mode="edit"
           department={department}

@@ -17,7 +17,8 @@ export default async function DivisionsPage({
   const page = parsePageParam(searchParams);
 
   const { profile } = await getCachedSessionProfile();
-  const isAdmin = profile.role === "admin";
+  const canMutateRefs =
+    profile.role === "admin" || profile.role === "member";
 
   const { rows, total, page: currentPage, pageSize } =
     await getDivisionsPaginated(page);
@@ -54,7 +55,7 @@ export default async function DivisionsPage({
           title="Divisions"
           description="Business units used to organize departments and documents."
         />
-        {isAdmin ? (
+        {canMutateRefs ? (
           <Link href="/divisions/new">
             <Button>Add division</Button>
           </Link>
@@ -67,7 +68,7 @@ export default async function DivisionsPage({
             rows={rows}
             columns={columns}
             actions={
-              isAdmin
+              canMutateRefs
                 ? (row) => (
                     <Link
                       href={`/divisions/${row.id}/edit`}

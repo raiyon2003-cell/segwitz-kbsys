@@ -50,7 +50,9 @@ export default async function DocumentsPage({
     profile.role === "member";
 
   const canManageDocs =
-    profile.role === "admin" || profile.role === "manager";
+    profile.role === "admin" ||
+    profile.role === "manager" ||
+    profile.role === "member";
 
   const { rows, total, page: currentPage, pageSize } = pageResult;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));

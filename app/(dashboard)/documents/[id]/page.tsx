@@ -49,7 +49,9 @@ export default async function DocumentDetailPage({
     updatedFlag === "true";
 
   const canManage =
-    profile.role === "admin" || profile.role === "manager";
+    profile.role === "admin" ||
+    profile.role === "manager" ||
+    profile.role === "member";
 
   const supabase = createSupabaseServerClient();
   const signedUrl = await getSignedPdfDownloadUrl(

@@ -17,7 +17,8 @@ export default async function TagsPage({
   const page = parsePageParam(searchParams);
 
   const { profile } = await getCachedSessionProfile();
-  const isAdmin = profile.role === "admin";
+  const canMutateRefs =
+    profile.role === "admin" || profile.role === "member";
 
   const { rows, total, page: currentPage, pageSize } =
     await getTagsPaginated(page);
@@ -72,7 +73,7 @@ export default async function TagsPage({
           title="Tags"
           description="Flexible labels for filtering and grouping documents."
         />
-        {isAdmin ? (
+        {canMutateRefs ? (
           <Link href="/tags/new">
             <Button>Add tag</Button>
           </Link>
@@ -85,7 +86,7 @@ export default async function TagsPage({
             rows={rows}
             columns={columns}
             actions={
-              isAdmin
+              canMutateRefs
                 ? (row) => (
                     <Link
                       href={`/tags/${row.id}/edit`}

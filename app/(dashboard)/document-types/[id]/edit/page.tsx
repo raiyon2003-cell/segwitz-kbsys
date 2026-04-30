@@ -23,7 +23,8 @@ export default async function EditDocumentTypePage({ params }: Props) {
   if (!record) notFound();
 
   const { profile } = await getCachedSessionProfile();
-  const isAdmin = profile.role === "admin";
+  const canMutateRefs =
+    profile.role === "admin" || profile.role === "member";
 
   return (
     <main className="px-6 py-8 lg:px-10">
@@ -36,7 +37,7 @@ export default async function EditDocumentTypePage({ params }: Props) {
           <Link href="/document-types">
             <Button variant="outline">Back to list</Button>
           </Link>
-          {isAdmin ? (
+          {canMutateRefs ? (
             <ResourceDeleteButton
               id={record.id}
               deleteAction={deleteDocumentType}
@@ -47,7 +48,7 @@ export default async function EditDocumentTypePage({ params }: Props) {
         </div>
       </div>
 
-      {isAdmin ? (
+      {canMutateRefs ? (
         <DocumentTypeForm mode="edit" record={record} />
       ) : (
         <p className="text-sm text-foreground-muted">

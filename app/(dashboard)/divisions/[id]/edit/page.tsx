@@ -23,7 +23,8 @@ export default async function EditDivisionPage({ params }: Props) {
   if (!division) notFound();
 
   const { profile } = await getCachedSessionProfile();
-  const isAdmin = profile.role === "admin";
+  const canMutateRefs =
+    profile.role === "admin" || profile.role === "member";
 
   return (
     <main className="px-6 py-8 lg:px-10">
@@ -36,7 +37,7 @@ export default async function EditDivisionPage({ params }: Props) {
           <Link href="/divisions">
             <Button variant="outline">Back to list</Button>
           </Link>
-          {isAdmin ? (
+          {canMutateRefs ? (
             <ResourceDeleteButton
               id={division.id}
               deleteAction={deleteDivision}
@@ -47,7 +48,7 @@ export default async function EditDivisionPage({ params }: Props) {
         </div>
       </div>
 
-      {isAdmin ? (
+      {canMutateRefs ? (
         <DivisionForm mode="edit" division={division} />
       ) : (
         <p className="text-sm text-foreground-muted">
