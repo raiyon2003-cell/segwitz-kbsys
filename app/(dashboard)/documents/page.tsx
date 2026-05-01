@@ -2,6 +2,7 @@ import Link from "next/link";
 import { DocumentArchiveButton } from "@/components/documents/document-archive-button";
 import { DocumentUploadSuccessBanner } from "@/components/documents/document-upload-success-banner";
 import { DocumentStatusBadge } from "@/components/documents/document-status";
+import { DocumentsBrowseNav } from "@/components/documents/documents-browse-nav";
 import { DocumentsFilterToolbar } from "@/components/documents/documents-filter-toolbar";
 import { DocumentsGrid } from "@/components/documents/documents-grid";
 import { CrudPagination } from "@/components/crud/crud-pagination";
@@ -120,6 +121,7 @@ export default async function DocumentsPage({
   ];
 
   const preserveParams = documentsListPreserveParams(parsed);
+  const needsDeptForDocs = Boolean(parsed.divisionId && !parsed.departmentId);
 
   return (
     <main className="min-h-[calc(100vh-4rem)] px-6 py-8 lg:px-10">
@@ -148,6 +150,14 @@ export default async function DocumentsPage({
             dismissHref={documentsHref("/documents", parsed)}
           />
         ) : null}
+
+        <DocumentsBrowseNav
+          pathname="/documents"
+          parsed={parsed}
+          divisions={options.divisions}
+          departments={options.departments}
+        />
+
         <Card className="overflow-hidden border-border-subtle shadow-[0_1px_2px_rgb(15_23_42/4%),0_8px_24px_rgb(15_23_42/6%)] dark:shadow-[0_4px_24px_rgb(0_0_0/35%)]">
           <CardHeader className="border-b border-border-subtle bg-surface-muted/40 pb-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
@@ -169,6 +179,9 @@ export default async function DocumentsPage({
               <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <p className="text-sm text-foreground-muted">
                   {total === 0 ? (
+                    needsDeptForDocs ? (
+                      <>Select a department above to view documents in this division.</>
+                    ) : (
                     <>
                       No documents match{" "}
                       <span className="font-medium text-foreground">
@@ -176,6 +189,7 @@ export default async function DocumentsPage({
                       </span>
                       .
                     </>
+                    )
                   ) : (
                     <>
                       Showing{" "}
@@ -201,14 +215,18 @@ export default async function DocumentsPage({
               {parsed.layout === "grid" ? (
                 rows.length === 0 ? (
                   <p className="rounded-xl border border-dashed border-border-subtle bg-surface-muted/30 py-16 text-center text-sm text-foreground-muted">
-                    No documents match these filters.
+                    {needsDeptForDocs
+                      ? "Select a department above to view documents in this division."
+                      : "No documents match these filters."}
                   </p>
                 ) : (
                   <DocumentsGrid rows={rows} canManage={canManageDocs} />
                 )
               ) : rows.length === 0 ? (
                 <p className="rounded-xl border border-dashed border-border-subtle bg-surface-muted/30 py-16 text-center text-sm text-foreground-muted">
-                  No documents match these filters.
+                  {needsDeptForDocs
+                    ? "Select a department above to view documents in this division."
+                    : "No documents match these filters."}
                 </p>
               ) : (
                 <CrudTable

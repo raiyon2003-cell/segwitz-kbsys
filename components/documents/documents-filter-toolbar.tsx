@@ -70,18 +70,9 @@ export function DocumentsFilterToolbar({
   }, [options.departments, parsed.divisionId]);
 
   function onDivisionChange(divisionId: string) {
-    let nextDept: string | null = parsed.departmentId;
-    const deps = options.departments.filter((d) => d.division_id === divisionId);
-    if (
-      !divisionId ||
-      !nextDept ||
-      !deps.some((d) => d.id === nextDept)
-    ) {
-      nextDept = deps[0]?.id ?? null;
-    }
     merge({
       divisionId: divisionId || null,
-      departmentId: nextDept,
+      departmentId: null,
     });
   }
 

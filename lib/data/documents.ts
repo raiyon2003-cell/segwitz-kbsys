@@ -54,6 +54,15 @@ export async function getDocumentsPaginated(parsed: ParsedDocumentsListParams) {
   const from = (safePage - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
 
+  if (parsed.divisionId && !parsed.departmentId) {
+    return {
+      rows: [] as DocumentListEmbed[],
+      total: 0,
+      page: safePage,
+      pageSize: PAGE_SIZE,
+    };
+  }
+
   const view = parsed.view;
 
   let allowedIds: string[] | undefined;
