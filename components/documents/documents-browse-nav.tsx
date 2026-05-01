@@ -62,6 +62,7 @@ export function DocumentsBrowseNav({
                 href={documentsHref(
                   pathname,
                   mergeDocumentsListParams(parsed, {
+                    divisionId: parsed.divisionId,
                     departmentId: d.id,
                     page: 1,
                   }),

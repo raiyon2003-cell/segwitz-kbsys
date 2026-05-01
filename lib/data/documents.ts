@@ -79,57 +79,71 @@ export async function getDocumentsPaginated(parsed: ParsedDocumentsListParams) {
     }
   }
 
-  let query = supabase
-    .from("documents")
-    .select(DOCUMENT_LIST_EMBED_SELECT, { count: "exact" })
-    .order("updated_at", { ascending: false })
-    .range(from, to);
+  function filteredBase(skipDepartment?: boolean) {
+    let builder = supabase
+      .from("documents")
+      .select(DOCUMENT_LIST_EMBED_SELECT, { count: "exact" })
+      .order("updated_at", { ascending: false });
 
-  if (allowedIds) {
-    query = query.in("id", allowedIds);
-  }
-
-  const statusFilter = parsed.status;
-
-  if (statusFilter) {
-    query = query.eq("status", statusFilter as DocumentStatus);
-  } else {
-    if (view === "active") {
-      query = query.neq("status", "archived");
-    } else if (view === "archived") {
-      query = query.eq("status", "archived");
+    if (allowedIds) {
+      builder = builder.in("id", allowedIds);
     }
+
+    const statusFilter = parsed.status;
+
+    if (statusFilter) {
+      builder = builder.eq("status", statusFilter as DocumentStatus);
+    } else {
+      if (view === "active") {
+        builder = builder.neq("status", "archived");
+      } else if (view === "archived") {
+        builder = builder.eq("status", "archived");
+      }
+    }
+
+    const q = parsed.q.trim();
+    if (q.length > 0) {
+      const escaped = escapeIlikePattern(q);
+      builder = builder.ilike("title", `%${escaped}%`);
+    }
+
+    if (parsed.divisionId) {
+      builder = builder.eq("division_id", parsed.divisionId);
+    }
+
+    if (parsed.departmentId && !skipDepartment) {
+      builder = builder.eq("department_id", parsed.departmentId);
+    }
+
+    if (parsed.documentTypeId) {
+      builder = builder.eq("document_type_id", parsed.documentTypeId);
+    }
+
+    if (parsed.processUncategorizedOnly) {
+      builder = builder.is("process_category_id", null);
+    } else if (parsed.processCategoryId) {
+      builder = builder.eq("process_category_id", parsed.processCategoryId);
+    }
+
+    if (parsed.ownerId) {
+      builder = builder.eq("owner_id", parsed.ownerId);
+    }
+
+    return builder;
   }
 
-  const q = parsed.q.trim();
-  if (q.length > 0) {
-    const escaped = escapeIlikePattern(q);
-    query = query.ilike("title", `%${escaped}%`);
-  }
+  let query = filteredBase(false).range(from, to);
 
-  if (parsed.divisionId) {
-    query = query.eq("division_id", parsed.divisionId);
-  }
+  let { data, error, count } = await query;
 
-  if (parsed.departmentId) {
-    query = query.eq("department_id", parsed.departmentId);
+  if (
+    !error &&
+    parsed.divisionId &&
+    parsed.departmentId &&
+    (count ?? 0) === 0
+  ) {
+    ({ data, error, count } = await filteredBase(true).range(from, to));
   }
-
-  if (parsed.documentTypeId) {
-    query = query.eq("document_type_id", parsed.documentTypeId);
-  }
-
-  if (parsed.processUncategorizedOnly) {
-    query = query.is("process_category_id", null);
-  } else if (parsed.processCategoryId) {
-    query = query.eq("process_category_id", parsed.processCategoryId);
-  }
-
-  if (parsed.ownerId) {
-    query = query.eq("owner_id", parsed.ownerId);
-  }
-
-  const { data, error, count } = await query;
 
   if (error) throw new Error(error.message);
 

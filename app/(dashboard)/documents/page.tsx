@@ -181,6 +181,8 @@ export default async function DocumentsPage({
                   {total === 0 ? (
                     needsDeptForDocs ? (
                       <>Select a department above to view documents in this division.</>
+                    ) : parsed.departmentId ? (
+                      <>No documents found for this department.</>
                     ) : (
                     <>
                       No documents match{" "}
@@ -217,7 +219,9 @@ export default async function DocumentsPage({
                   <p className="rounded-xl border border-dashed border-border-subtle bg-surface-muted/30 py-16 text-center text-sm text-foreground-muted">
                     {needsDeptForDocs
                       ? "Select a department above to view documents in this division."
-                      : "No documents match these filters."}
+                      : parsed.departmentId
+                        ? "No documents found for this department."
+                        : "No documents match these filters."}
                   </p>
                 ) : (
                   <DocumentsGrid rows={rows} canManage={canManageDocs} />
@@ -226,7 +230,9 @@ export default async function DocumentsPage({
                 <p className="rounded-xl border border-dashed border-border-subtle bg-surface-muted/30 py-16 text-center text-sm text-foreground-muted">
                   {needsDeptForDocs
                     ? "Select a department above to view documents in this division."
-                    : "No documents match these filters."}
+                    : parsed.departmentId
+                      ? "No documents found for this department."
+                      : "No documents match these filters."}
                 </p>
               ) : (
                 <CrudTable
