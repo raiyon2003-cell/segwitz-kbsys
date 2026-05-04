@@ -10,6 +10,11 @@ import { CrudTable } from "@/components/crud/crud-table";
 import type { CrudColumn } from "@/components/crud/crud-table";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
+import {
+  canDeleteOrArchiveDocuments,
+  canEditDocumentRecords,
+  canUploadDocuments,
+} from "@/lib/auth/rbac";
 import { getCachedSessionProfile } from "@/lib/auth/session";
 import { getDocumentsPaginated } from "@/lib/data/documents";
 import { loadDocumentFormOptions } from "@/lib/data/document-form-options";
@@ -18,16 +23,21 @@ import {
   documentsListPreserveParams,
   parseDocumentsListParams,
 } from "@/lib/documents/list-params";
+import {
+  resolveSearchParams,
+  type RouteSearchParams,
+} from "@/lib/next/route-args";
 import type { DocumentListEmbed } from "@/types/documents";
 
 export default async function DocumentsPage({
   searchParams,
 }: {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: RouteSearchParams | Promise<RouteSearchParams>;
 }) {
-  const parsed = parseDocumentsListParams(searchParams);
+  const sp = await resolveSearchParams(searchParams);
+  const parsed = parseDocumentsListParams(sp);
 
-  const uploadedRaw = searchParams.uploaded;
+  const uploadedRaw = sp.uploaded;
   const uploadNotice =
     typeof uploadedRaw === "string"
       ? uploadedRaw
@@ -45,15 +55,9 @@ export default async function DocumentsPage({
     getDocumentsPaginated(parsed),
   ]);
 
-  const canUpload =
-    profile.role === "admin" ||
-    profile.role === "manager" ||
-    profile.role === "member";
-
-  const canManageDocs =
-    profile.role === "admin" ||
-    profile.role === "manager" ||
-    profile.role === "member";
+  const canUpload = canUploadDocuments(profile);
+  const canEditDocs = canEditDocumentRecords(profile);
+  const canArchiveDocs = canDeleteOrArchiveDocuments(profile);
 
   const { rows, total, page: currentPage, pageSize } = pageResult;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -224,7 +228,11 @@ export default async function DocumentsPage({
                         : "No documents match these filters."}
                   </p>
                 ) : (
-                  <DocumentsGrid rows={rows} canManage={canManageDocs} />
+                  <DocumentsGrid
+                    rows={rows}
+                    canEdit={canEditDocs}
+                    canArchive={canArchiveDocs}
+                  />
                 )
               ) : rows.length === 0 ? (
                 <p className="rounded-xl border border-dashed border-border-subtle bg-surface-muted/30 py-16 text-center text-sm text-foreground-muted">
@@ -239,16 +247,18 @@ export default async function DocumentsPage({
                   rows={rows}
                   columns={columns}
                   actions={
-                    canManageDocs
+                    canEditDocs || canArchiveDocs
                       ? (row) => (
                           <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
-                            <Link
-                              href={`/documents/${row.id}/edit`}
-                              className="text-sm font-medium text-accent hover:underline"
-                            >
-                              Edit
-                            </Link>
-                            {row.status !== "archived" ? (
+                            {canEditDocs ? (
+                              <Link
+                                href={`/documents/${row.id}/edit`}
+                                className="text-sm font-medium text-accent hover:underline"
+                              >
+                                Edit
+                              </Link>
+                            ) : null}
+                            {canArchiveDocs && row.status !== "archived" ? (
                               <DocumentArchiveButton documentId={row.id} />
                             ) : null}
                           </div>

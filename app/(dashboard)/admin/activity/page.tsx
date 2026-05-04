@@ -6,19 +6,24 @@ import { CrudTable } from "@/components/crud/crud-table";
 import { Card, CardContent } from "@/components/ui";
 import { getCachedSessionProfile } from "@/lib/auth/session";
 import { getActivityLogPaginated } from "@/lib/activity";
+import {
+  resolveSearchParams,
+  type RouteSearchParams,
+} from "@/lib/next/route-args";
 import { parsePageParam } from "@/lib/pagination";
 
 export default async function AdminActivityPage({
   searchParams,
 }: {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: RouteSearchParams | Promise<RouteSearchParams>;
 }) {
   const { profile } = await getCachedSessionProfile();
   if (profile.role !== "admin") {
     redirect("/");
   }
 
-  const currentPage = parsePageParam(searchParams);
+  const sp = await resolveSearchParams(searchParams);
+  const currentPage = parsePageParam(sp);
   const { rows, total, page, pageSize } =
     await getActivityLogPaginated(currentPage);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));

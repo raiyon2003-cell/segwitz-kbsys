@@ -35,7 +35,7 @@ export async function createProcessCategory(
   const parsed = parsePayload(formData);
   if (!parsed.ok) return parsed;
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("process_categories")
     .insert({
@@ -67,7 +67,7 @@ export async function updateProcessCategory(formData: FormData): Promise<ActionR
   const parsed = parsePayload(formData);
   if (!parsed.ok) return parsed;
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { error } = await supabase
     .from("process_categories")
     .update({
@@ -96,7 +96,7 @@ export async function deleteProcessCategory(formData: FormData): Promise<ActionR
   const id = String(formData.get("id") ?? "").trim();
   if (!id) return { ok: false, error: "Missing record id." };
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from("process_categories").delete().eq("id", id);
 
   if (error) {

@@ -33,6 +33,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
+      <head>
+        {/*
+          Fallback: same Tailwind build as app/globals.css, served from /public.
+          If Next’s chunked CSS fails to load (cache, proxy, adblock), the UI
+          still renders with design tokens and utilities.
+        */}
+        {/* eslint-disable-next-line @next/next/no-css-tags -- static /public bundle; not a duplicate app import */}
+        <link rel="stylesheet" href="/kb-styles.css" />
+      </head>
       <body
         className={cn(
           inter.className,

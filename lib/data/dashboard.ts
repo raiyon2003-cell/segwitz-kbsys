@@ -65,7 +65,7 @@ function isMissingSchemaError(message: string): boolean {
 }
 
 async function getDashboardDataCore(): Promise<DashboardData> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
 
   const [totalR, draftR, publishedR, archivedR, recentR, distR] =
     await Promise.all([

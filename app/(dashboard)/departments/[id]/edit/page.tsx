@@ -1,35 +1,56 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { DepartmentForm } from "@/app/(dashboard)/departments/department-form";
 import { deleteDepartment } from "@/app/(dashboard)/departments/actions";
 import { ResourceDeleteButton } from "@/components/crud/resource-delete-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
+import { canMutateOrgReferences } from "@/lib/auth/rbac";
 import { getCachedSessionProfile } from "@/lib/auth/session";
 import { getDepartmentById } from "@/lib/data/departments";
 import { getDivisionOptions } from "@/lib/data/divisions";
+import { resolveRouteParams } from "@/lib/next/route-args";
 
-type Props = { params: { id: string } };
+type Props = { params: { id: string } | Promise<{ id: string }> };
+
+async function resolveDepartmentId(
+  params: Props["params"],
+): Promise<string> {
+  const { id } = await resolveRouteParams(params);
+  const trimmed = id.trim();
+  if (trimmed.toLowerCase() === "new") {
+    redirect("/departments/new");
+  }
+  return trimmed;
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const row = await getDepartmentById(params.id);
+  const { id: rawId } = await resolveRouteParams(params);
+  const id = rawId.trim();
+  if (id.toLowerCase() === "new") {
+    return { title: "Department" };
+  }
+  const row = await getDepartmentById(id);
   return {
     title: row ? `Edit · ${row.name}` : "Department",
   };
 }
 
 export default async function EditDepartmentPage({ params }: Props) {
+  const id = await resolveDepartmentId(params);
   const [department, divisions] = await Promise.all([
-    getDepartmentById(params.id),
+    getDepartmentById(id),
     getDivisionOptions(),
   ]);
 
   if (!department) notFound();
 
   const { profile } = await getCachedSessionProfile();
-  const canMutateRefs =
-    profile.role === "admin" || profile.role === "member";
+  const canMutateRefs = canMutateOrgReferences(profile);
+  if (!canMutateRefs) {
+    redirect(`/departments/${id}`);
+  }
 
   return (
     <main className="px-6 py-8 lg:px-10">
@@ -42,28 +63,20 @@ export default async function EditDepartmentPage({ params }: Props) {
           <Link href="/departments">
             <Button variant="outline">Back to list</Button>
           </Link>
-          {canMutateRefs ? (
-            <ResourceDeleteButton
-              id={department.id}
-              deleteAction={deleteDepartment}
-              noun="department"
-              listHref="/departments"
-            />
-          ) : null}
+          <ResourceDeleteButton
+            id={department.id}
+            deleteAction={deleteDepartment}
+            noun="department"
+            listHref="/departments"
+          />
         </div>
       </div>
 
-      {canMutateRefs ? (
-        <DepartmentForm
-          mode="edit"
-          department={department}
-          divisions={divisions.map((d) => ({ id: d.id, name: d.name }))}
-        />
-      ) : (
-        <p className="text-sm text-foreground-muted">
-          You don&apos;t have permission to edit departments.
-        </p>
-      )}
+      <DepartmentForm
+        mode="edit"
+        department={department}
+        divisions={divisions.map((d) => ({ id: d.id, name: d.name }))}
+      />
     </main>
   );
 }

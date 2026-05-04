@@ -5,7 +5,7 @@ export type NavItem = {
   href: string;
 };
 
-export type AppRole = "admin" | "manager" | "member" | "viewer";
+export type AppRole = "admin" | "manager" | "member" | "employee" | "viewer";
 
 export type Profile = {
   id: string;

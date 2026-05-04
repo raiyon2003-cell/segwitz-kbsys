@@ -17,8 +17,34 @@ export function AppTopbar({
     "Signed in";
 
   return (
-    <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-4 border-b border-border-subtle bg-surface/90 px-4 backdrop-blur md:px-6 lg:px-8">
-      <div className="relative mx-auto flex w-full max-w-4xl flex-1 items-center">
+    <header
+      className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-4 border-b border-border-subtle bg-surface/90 px-4 backdrop-blur md:px-6 lg:px-8"
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 40,
+        display: "flex",
+        height: "3.5rem",
+        flexShrink: 0,
+        alignItems: "center",
+        gap: "1rem",
+        paddingLeft: "1rem",
+        paddingRight: "1rem",
+        borderBottom: "1px solid #e2e8f0",
+        backgroundColor: "rgba(255, 255, 255, 0.92)",
+      }}
+    >
+      <div
+        className="relative mx-auto flex w-full max-w-4xl flex-1 items-center"
+        style={{
+          position: "relative",
+          display: "flex",
+          width: "100%",
+          maxWidth: "56rem",
+          flex: "1 1 auto",
+          alignItems: "center",
+        }}
+      >
         <Search
           className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-foreground-faint"
           aria-hidden
@@ -42,11 +68,20 @@ export function AppTopbar({
         <Bell className="size-[18px]" />
         <span className="absolute right-2 top-2 size-2 rounded-full bg-accent" />
       </button>
-      <div className="flex flex-col items-end gap-0.5">
-        <span className="hidden max-w-[140px] truncate text-xs font-medium text-foreground sm:inline">
+      <div
+        className="flex flex-col items-end gap-0.5"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-end",
+          gap: "2px",
+          textAlign: "right",
+        }}
+      >
+        <span className="max-w-[140px] truncate text-xs font-medium text-foreground sm:inline">
           {display}
         </span>
-        <span className="hidden text-[10px] uppercase tracking-wide text-foreground-muted sm:inline">
+        <span className="text-[10px] uppercase tracking-wide text-foreground-muted sm:inline">
           {profile.role}
         </span>
       </div>

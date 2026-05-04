@@ -51,7 +51,7 @@ export async function createTag(formData: FormData): Promise<ActionResult<{ id: 
   const parsed = parseTagPayload(formData);
   if (!parsed.ok) return parsed;
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("tags")
     .insert({
@@ -84,7 +84,7 @@ export async function updateTag(formData: FormData): Promise<ActionResult> {
   const parsed = parseTagPayload(formData);
   if (!parsed.ok) return parsed;
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { error } = await supabase
     .from("tags")
     .update({
@@ -114,7 +114,7 @@ export async function deleteTag(formData: FormData): Promise<ActionResult> {
   const id = String(formData.get("id") ?? "").trim();
   if (!id) return { ok: false, error: "Missing record id." };
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from("tags").delete().eq("id", id);
 
   if (error) {

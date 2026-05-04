@@ -49,19 +49,10 @@ async function fetchDocumentIdsMatchingAllTags(
 }
 
 export async function getDocumentsPaginated(parsed: ParsedDocumentsListParams) {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const safePage = Math.max(1, Math.floor(parsed.page) || 1);
   const from = (safePage - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
-
-  if (parsed.divisionId && !parsed.departmentId) {
-    return {
-      rows: [] as DocumentListEmbed[],
-      total: 0,
-      page: safePage,
-      pageSize: PAGE_SIZE,
-    };
-  }
 
   const view = parsed.view;
 
@@ -155,10 +146,68 @@ export async function getDocumentsPaginated(parsed: ParsedDocumentsListParams) {
   };
 }
 
+const DEPARTMENT_LIBRARY_LIMIT = 500;
+
+/** Active (non-archived) documents in a department for the department library page. */
+export async function getDocumentsForDepartmentLibrary(
+  departmentId: string,
+): Promise<DocumentListEmbed[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("documents")
+    .select(DOCUMENT_LIST_EMBED_SELECT)
+    .eq("department_id", departmentId)
+    .neq("status", "archived")
+    .order("updated_at", { ascending: false })
+    .limit(DEPARTMENT_LIBRARY_LIMIT);
+
+  if (error) throw new Error(error.message);
+  return (data ?? []) as DocumentListEmbed[];
+}
+
+/** Active (non-archived) documents in a division for the division library page. */
+export async function getDocumentsForDivisionLibrary(
+  divisionId: string,
+): Promise<DocumentListEmbed[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("documents")
+    .select(DOCUMENT_LIST_EMBED_SELECT)
+    .eq("division_id", divisionId)
+    .neq("status", "archived")
+    .order("updated_at", { ascending: false })
+    .limit(DEPARTMENT_LIBRARY_LIMIT);
+
+  if (error) throw new Error(error.message);
+  return (data ?? []) as DocumentListEmbed[];
+}
+
+export type DocumentPickerRow = {
+  id: string;
+  title: string;
+  department_id: string;
+};
+
+/** Recent documents for RBAC admin checklists (filtered client-side by department). */
+export async function getRecentDocumentsForAccessPicker(): Promise<
+  DocumentPickerRow[]
+> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("documents")
+    .select("id, title, department_id")
+    .neq("status", "archived")
+    .order("updated_at", { ascending: false })
+    .limit(500);
+
+  if (error) throw new Error(error.message);
+  return (data ?? []) as DocumentPickerRow[];
+}
+
 export async function getDocumentById(
   id: string,
 ): Promise<DocumentListEmbed | null> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("documents")
     .select(DOCUMENT_LIST_EMBED_SELECT)

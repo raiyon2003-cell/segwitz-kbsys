@@ -9,7 +9,7 @@ export async function getSessionProfile(): Promise<{
   profile: Profile;
   email: string | null;
 }> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
 
   const {
     data: { user },

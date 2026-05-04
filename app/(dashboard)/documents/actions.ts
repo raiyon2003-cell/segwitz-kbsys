@@ -92,7 +92,7 @@ async function assertDepartmentMatchesDivision(
   divisionId: string,
   departmentId: string,
 ): Promise<ActionResult> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("departments")
     .select("division_id")
@@ -117,7 +117,7 @@ async function syncDocumentTags(
   documentId: string,
   tagIds: string[],
 ): Promise<ActionResult> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
 
   const { error: delErr } = await supabase
     .from("document_tags")
@@ -167,7 +167,7 @@ export async function createDocument(
   );
   if (!deptOk.ok) return deptOk;
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -245,7 +245,7 @@ export async function updateDocument(formData: FormData): Promise<ActionResult> 
   );
   if (!deptOk.ok) return deptOk;
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -337,7 +337,7 @@ export async function archiveDocument(formData: FormData): Promise<ActionResult>
   const id = String(formData.get("id") ?? "").trim();
   if (!id) return { ok: false, error: "Missing document id." };
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

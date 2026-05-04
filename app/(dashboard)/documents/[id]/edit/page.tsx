@@ -7,19 +7,30 @@ import { getCachedSessionProfile } from "@/lib/auth/session";
 import { getTagIdsForDocument } from "@/lib/data/document-tags";
 import { loadDocumentFormOptions } from "@/lib/data/document-form-options";
 import { getDocumentById } from "@/lib/data/documents";
+import { resolveRouteParams } from "@/lib/next/route-args";
 
 type Props = {
-  params: { id: string };
+  params: { id: string } | Promise<{ id: string }>;
 };
 
+async function resolveRouteId(params: Props["params"]): Promise<string> {
+  const { id } = await resolveRouteParams(params);
+  return typeof id === "string" ? id.trim() : "";
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const doc = await getDocumentById(params.id);
+  const routeId = await resolveRouteId(params);
+  if (!routeId) return { title: "Edit document" };
+  const doc = await getDocumentById(routeId);
   return {
     title: doc ? `Edit · ${doc.title}` : "Edit document",
   };
 }
 
 export default async function EditDocumentPage({ params }: Props) {
+  const routeId = await resolveRouteId(params);
+  if (!routeId) notFound();
+
   const gate = await guardDocumentEditor();
   if (gate.denied) {
     redirect("/documents");
@@ -27,8 +38,8 @@ export default async function EditDocumentPage({ params }: Props) {
 
   const [document, selectedTagIds, options, { profile }] =
     await Promise.all([
-      getDocumentById(params.id),
-      getTagIdsForDocument(params.id),
+      getDocumentById(routeId),
+      getTagIdsForDocument(routeId),
       loadDocumentFormOptions(),
       getCachedSessionProfile(),
     ]);

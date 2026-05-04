@@ -13,10 +13,12 @@ function formatUpdated(iso: string) {
 
 export function DocumentsGrid({
   rows,
-  canManage,
+  canEdit,
+  canArchive,
 }: {
   rows: DocumentListEmbed[];
-  canManage: boolean;
+  canEdit: boolean;
+  canArchive: boolean;
 }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -55,18 +57,16 @@ export function DocumentsGrid({
             >
               Download PDF
             </a>
-            {canManage ? (
-              <>
-                <Link
-                  href={`/documents/${row.id}/edit`}
-                  className="inline-flex items-center justify-center rounded-md border border-border bg-transparent px-3 py-1.5 text-xs font-medium text-foreground hover:bg-surface-muted"
-                >
-                  Edit
-                </Link>
-                {row.status !== "archived" ? (
-                  <DocumentArchiveButton documentId={row.id} />
-                ) : null}
-              </>
+            {canEdit ? (
+              <Link
+                href={`/documents/${row.id}/edit`}
+                className="inline-flex items-center justify-center rounded-md border border-border bg-transparent px-3 py-1.5 text-xs font-medium text-foreground hover:bg-surface-muted"
+              >
+                Edit
+              </Link>
+            ) : null}
+            {canArchive && row.status !== "archived" ? (
+              <DocumentArchiveButton documentId={row.id} />
             ) : null}
           </div>
         </article>

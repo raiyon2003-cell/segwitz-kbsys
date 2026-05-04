@@ -37,7 +37,7 @@ export async function createDepartment(
   const parsed = parseDepartmentPayload(formData);
   if (!parsed.ok) return parsed;
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("departments")
     .insert({
@@ -73,7 +73,7 @@ export async function updateDepartment(formData: FormData): Promise<ActionResult
   const parsed = parseDepartmentPayload(formData);
   if (!parsed.ok) return parsed;
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { error } = await supabase
     .from("departments")
     .update({
@@ -106,7 +106,7 @@ export async function deleteDepartment(formData: FormData): Promise<ActionResult
   const id = String(formData.get("id") ?? "").trim();
   if (!id) return { ok: false, error: "Missing record id." };
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from("departments").delete().eq("id", id);
 
   if (error) {

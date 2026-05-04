@@ -5,7 +5,7 @@ import type { TagRow } from "@/types/entities";
 
 /** All tags for multi-select pickers (small list expected). */
 export async function getTagsForPicker(): Promise<Pick<TagRow, "id" | "name">[]> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("tags")
     .select("id, name")

@@ -20,7 +20,7 @@ export const getDocumentDetail = cache(
   async function getDocumentDetail(
     id: string,
   ): Promise<DocumentDetail | null> {
-    const supabase = createSupabaseServerClient();
+    const supabase = await createSupabaseServerClient();
 
     const [{ data, error }, tags] = await Promise.all([
       supabase

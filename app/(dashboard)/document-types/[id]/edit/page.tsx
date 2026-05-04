@@ -1,30 +1,37 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { DocumentTypeForm } from "@/app/(dashboard)/document-types/document-type-form";
 import { deleteDocumentType } from "@/app/(dashboard)/document-types/actions";
 import { ResourceDeleteButton } from "@/components/crud/resource-delete-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
+import { canMutateOrgReferences } from "@/lib/auth/rbac";
 import { getCachedSessionProfile } from "@/lib/auth/session";
 import { getDocumentTypeById } from "@/lib/data/document-types";
+import { resolveRouteParams } from "@/lib/next/route-args";
 
-type Props = { params: { id: string } };
+type PageParams = { id: string };
+type Props = { params: PageParams | Promise<PageParams> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const row = await getDocumentTypeById(params.id);
+  const { id } = await resolveRouteParams(params);
+  const row = await getDocumentTypeById(id);
   return {
     title: row ? `Edit · ${row.name}` : "Document type",
   };
 }
 
 export default async function EditDocumentTypePage({ params }: Props) {
-  const record = await getDocumentTypeById(params.id);
+  const { id } = await resolveRouteParams(params);
+  const record = await getDocumentTypeById(id);
   if (!record) notFound();
 
   const { profile } = await getCachedSessionProfile();
-  const canMutateRefs =
-    profile.role === "admin" || profile.role === "member";
+  const canMutateRefs = canMutateOrgReferences(profile);
+  if (!canMutateRefs) {
+    redirect("/document-types");
+  }
 
   return (
     <main className="px-6 py-8 lg:px-10">
@@ -37,24 +44,16 @@ export default async function EditDocumentTypePage({ params }: Props) {
           <Link href="/document-types">
             <Button variant="outline">Back to list</Button>
           </Link>
-          {canMutateRefs ? (
-            <ResourceDeleteButton
-              id={record.id}
-              deleteAction={deleteDocumentType}
-              noun="document type"
-              listHref="/document-types"
-            />
-          ) : null}
+          <ResourceDeleteButton
+            id={record.id}
+            deleteAction={deleteDocumentType}
+            noun="document type"
+            listHref="/document-types"
+          />
         </div>
       </div>
 
-      {canMutateRefs ? (
-        <DocumentTypeForm mode="edit" record={record} />
-      ) : (
-        <p className="text-sm text-foreground-muted">
-          You don&apos;t have permission to edit document types.
-        </p>
-      )}
+      <DocumentTypeForm mode="edit" record={record} />
     </main>
   );
 }

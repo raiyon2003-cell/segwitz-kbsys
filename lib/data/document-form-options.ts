@@ -17,7 +17,7 @@ export type DocumentFormOptionSets = {
 };
 
 export async function loadDocumentFormOptions(): Promise<DocumentFormOptionSets> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
 
   const [
     divisionsRes,

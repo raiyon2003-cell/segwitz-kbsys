@@ -5,9 +5,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { getSupabasePublicEnv } from "@/lib/supabase/env";
 
-export function createSupabaseServerClient(): SupabaseClient {
+/** Async so `await cookies()` works on Next.js 15+ (cookies() returns a Promise there). */
+export async function createSupabaseServerClient(): Promise<SupabaseClient> {
   const { url, key } = getSupabasePublicEnv();
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
 
   return createServerClient(url, key, {
     cookies: {

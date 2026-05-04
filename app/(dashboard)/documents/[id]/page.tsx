@@ -1,42 +1,115 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { DocumentDetailMeta } from "@/components/documents/document-detail-meta";
 import { DocumentPdfPanel } from "@/components/documents/document-pdf-panel";
 import { Button } from "@/components/ui/button";
+import { canEditDocumentRecords } from "@/lib/auth/rbac";
 import { getCachedSessionProfile } from "@/lib/auth/session";
 import { getDocumentDetail } from "@/lib/data/document-detail";
+import { getDepartmentById } from "@/lib/data/departments";
+import { getDivisionById } from "@/lib/data/divisions";
+import {
+  documentsHref,
+  mergeDocumentsListParams,
+  resetDocumentsFiltersKeepScope,
+} from "@/lib/documents/list-params";
 import { getSignedPdfDownloadUrl } from "@/lib/storage/document-storage";
+import {
+  resolveRouteParams,
+  resolveSearchParams,
+  type RouteSearchParams,
+} from "@/lib/next/route-args";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-type Props = { params: { id: string } };
+type Props = { params: { id: string } | Promise<{ id: string }> };
+
+async function resolveRouteId(params: Props["params"]): Promise<string> {
+  const { id } = await resolveRouteParams(params);
+  return typeof id === "string" ? id.trim() : "";
+}
+
+/** Avoid 404 when users open `/documents/edit` (dynamic segment catches "edit"). */
+function redirectIfReservedDocumentSegment(routeId: string): void {
+  const lower = routeId.toLowerCase();
+  if (lower === "edit" || lower === "new") {
+    redirect(lower === "new" ? "/documents/new" : "/documents");
+  }
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const doc = await getDocumentDetail(params.id);
-  return {
-    title: doc?.title ?? "Document",
-    description: doc?.summary ?? undefined,
-  };
+  const routeId = await resolveRouteId(params);
+  if (!routeId) return { title: "Document" };
+  const seg = routeId.toLowerCase();
+  if (seg === "edit" || seg === "new") return { title: "Documents" };
+
+  const doc = await getDocumentDetail(routeId);
+  if (doc) {
+    return {
+      title: doc.title,
+      description: doc.summary ?? undefined,
+    };
+  }
+
+  const division = await getDivisionById(routeId);
+  if (division) {
+    return { title: `${division.name} · Documents` };
+  }
+
+  const dept = await getDepartmentById(routeId);
+  if (dept) {
+    return { title: `${dept.name} · Department` };
+  }
+
+  return { title: "Document" };
 }
 
 export default async function DocumentDetailPage({
   params,
   searchParams,
 }: {
-  params: { id: string };
-  searchParams: Record<string, string | string[] | undefined>;
+  params: Props["params"];
+  searchParams: RouteSearchParams | Promise<RouteSearchParams>;
 }) {
+  const routeId = await resolveRouteId(params);
+  if (!routeId) notFound();
+  redirectIfReservedDocumentSegment(routeId);
+
+  const sp = await resolveSearchParams(searchParams);
+
   const [{ profile }, doc] = await Promise.all([
     getCachedSessionProfile(),
-    getDocumentDetail(params.id),
+    getDocumentDetail(routeId),
   ]);
 
   if (!doc) {
+    const division = await getDivisionById(routeId);
+    if (division) {
+      redirect(
+        documentsHref(
+          "/documents",
+          mergeDocumentsListParams(
+            resetDocumentsFiltersKeepScope("active", "table"),
+            {
+              divisionId: routeId,
+              departmentId: null,
+              page: 1,
+            },
+          ),
+        ),
+      );
+    }
+
+    const dept = await getDepartmentById(routeId);
+    if (dept) {
+      redirect(`/departments/${routeId}`);
+    }
+
     notFound();
   }
 
-  const updatedRaw = searchParams.updated;
+  const updatedRaw = sp.updated;
   const updatedFlag =
     typeof updatedRaw === "string"
       ? updatedRaw
@@ -48,12 +121,9 @@ export default async function DocumentDetailPage({
     updatedFlag === "1" ||
     updatedFlag === "true";
 
-  const canManage =
-    profile.role === "admin" ||
-    profile.role === "manager" ||
-    profile.role === "member";
+  const canEditRecord = canEditDocumentRecords(profile);
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const signedUrl = await getSignedPdfDownloadUrl(
     supabase,
     doc.storage_object_path,
@@ -111,23 +181,19 @@ export default async function DocumentDetailPage({
               ) : null}
             </p>
           </div>
-          {canManage ? (
-            <div className="flex shrink-0 gap-2">
+          <div className="flex shrink-0 gap-2">
+            {canEditRecord ? (
               <Link href={`/documents/${doc.id}/edit`}>
                 <Button variant="outline" className="gap-2">
                   <Pencil className="size-4" aria-hidden />
                   Edit record
                 </Button>
               </Link>
-              <a href={`/api/documents/${doc.id}/download`}>
-                <Button className="gap-2">Download PDF</Button>
-              </a>
-            </div>
-          ) : (
+            ) : null}
             <a href={`/api/documents/${doc.id}/download`}>
               <Button className="gap-2">Download PDF</Button>
             </a>
-          )}
+          </div>
         </header>
 
         <div className="grid gap-10 xl:grid-cols-[minmax(280px,380px)_1fr] xl:items-start xl:gap-12">

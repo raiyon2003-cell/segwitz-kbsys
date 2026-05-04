@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "tailwindcss -i ./app/globals.css -o ./public/kb-styles.css --minify",
     "dev": "next dev -p 3000",
+    "prebuild": "tailwindcss -i ./app/globals.css -o ./public/kb-styles.css --minify",
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "next lint"

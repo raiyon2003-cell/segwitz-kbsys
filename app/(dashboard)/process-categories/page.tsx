@@ -4,21 +4,30 @@ import { CrudPagination } from "@/components/crud/crud-pagination";
 import { CrudTable } from "@/components/crud/crud-table";
 import type { CrudColumn } from "@/components/crud/crud-table";
 import { Button, Card, CardContent } from "@/components/ui";
+import { redirect } from "next/navigation";
+import { canMutateOrgReferences } from "@/lib/auth/rbac";
 import { getCachedSessionProfile } from "@/lib/auth/session";
 import { getProcessCategoriesPaginated } from "@/lib/data/process-categories";
+import {
+  resolveSearchParams,
+  type RouteSearchParams,
+} from "@/lib/next/route-args";
 import { parsePageParam } from "@/lib/pagination";
 import type { ProcessCategoryRow } from "@/types/entities";
 
 export default async function ProcessCategoriesPage({
   searchParams,
 }: {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: RouteSearchParams | Promise<RouteSearchParams>;
 }) {
-  const page = parsePageParam(searchParams);
+  const sp = await resolveSearchParams(searchParams);
+  const page = parsePageParam(sp);
 
   const { profile } = await getCachedSessionProfile();
-  const canMutateRefs =
-    profile.role === "admin" || profile.role === "member";
+  const canMutateRefs = canMutateOrgReferences(profile);
+  if (!canMutateRefs) {
+    redirect("/documents");
+  }
 
   const { rows, total, page: currentPage, pageSize } =
     await getProcessCategoriesPaginated(page);

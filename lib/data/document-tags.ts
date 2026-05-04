@@ -5,7 +5,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 export async function getTagIdsForDocument(
   documentId: string,
 ): Promise<string[]> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("document_tags")
     .select("tag_id")
@@ -18,7 +18,7 @@ export async function getTagIdsForDocument(
 export async function getTagsForDocument(
   documentId: string,
 ): Promise<{ id: string; name: string }[]> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("document_tags")
     .select("tags ( id, name )")

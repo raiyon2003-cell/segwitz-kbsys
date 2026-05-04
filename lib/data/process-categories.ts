@@ -5,7 +5,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { ProcessCategoryRow } from "@/types/entities";
 
 export async function getProcessCategoriesPaginated(page: number) {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const safePage = Math.max(1, Math.floor(page) || 1);
   const from = (safePage - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
@@ -29,7 +29,7 @@ export async function getProcessCategoriesPaginated(page: number) {
 export async function getProcessCategoryById(
   id: string,
 ): Promise<ProcessCategoryRow | null> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("process_categories")
     .select("*")

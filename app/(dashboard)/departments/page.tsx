@@ -4,24 +4,37 @@ import { CrudPagination } from "@/components/crud/crud-pagination";
 import { CrudTable } from "@/components/crud/crud-table";
 import type { CrudColumn } from "@/components/crud/crud-table";
 import { Button, Card, CardContent } from "@/components/ui";
+import {
+  canMutateOrgReferences,
+  hasFullStaffDocumentAccess,
+} from "@/lib/auth/rbac";
 import { getCachedSessionProfile } from "@/lib/auth/session";
-import { getDepartmentsPaginated } from "@/lib/data/departments";
+import {
+  getDepartmentsPaginated,
+  getDepartmentsPaginatedForProfile,
+} from "@/lib/data/departments";
+import {
+  resolveSearchParams,
+  type RouteSearchParams,
+} from "@/lib/next/route-args";
 import { parsePageParam } from "@/lib/pagination";
 import type { DepartmentRow } from "@/types/entities";
 
 export default async function DepartmentsPage({
   searchParams,
 }: {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: RouteSearchParams | Promise<RouteSearchParams>;
 }) {
-  const page = parsePageParam(searchParams);
+  const sp = await resolveSearchParams(searchParams);
+  const page = parsePageParam(sp);
 
   const { profile } = await getCachedSessionProfile();
-  const canMutateRefs =
-    profile.role === "admin" || profile.role === "member";
+  const canMutateRefs = canMutateOrgReferences(profile);
+  const fullStaff = hasFullStaffDocumentAccess(profile);
 
-  const { rows, total, page: currentPage, pageSize } =
-    await getDepartmentsPaginated(page);
+  const { rows, total, page: currentPage, pageSize } = fullStaff
+    ? await getDepartmentsPaginated(page)
+    : await getDepartmentsPaginatedForProfile(profile.id, page);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const columns: CrudColumn<DepartmentRow>[] = [
@@ -73,18 +86,24 @@ export default async function DepartmentsPage({
           <CrudTable
             rows={rows}
             columns={columns}
-            actions={
-              canMutateRefs
-                ? (row) => (
-                    <Link
-                      href={`/departments/${row.id}/edit`}
-                      className="text-sm font-medium text-accent hover:underline"
-                    >
-                      Edit
-                    </Link>
-                  )
-                : undefined
-            }
+            actions={(row) => (
+              <div className="flex flex-col items-end gap-1 sm:flex-row sm:gap-3">
+                <Link
+                  href={`/departments/${row.id}`}
+                  className="text-sm font-medium text-accent hover:underline"
+                >
+                  View documents
+                </Link>
+                {canMutateRefs ? (
+                  <Link
+                    href={`/departments/${row.id}/edit`}
+                    className="text-sm font-medium text-accent hover:underline"
+                  >
+                    Edit
+                  </Link>
+                ) : null}
+              </div>
+            )}
           />
           <CrudPagination
             basePath="/departments"

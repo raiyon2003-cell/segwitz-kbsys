@@ -13,7 +13,7 @@ export async function GET(request: Request) {
   const safeNext =
     nextPath.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/";
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {

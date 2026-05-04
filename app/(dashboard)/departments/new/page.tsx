@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { DepartmentForm } from "@/app/(dashboard)/departments/department-form";
 import { PageHeader } from "@/components/layout/page-header";
+import { canMutateOrgReferences } from "@/lib/auth/rbac";
+import { getCachedSessionProfile } from "@/lib/auth/session";
 import { getDivisionOptions } from "@/lib/data/divisions";
 
 export const metadata: Metadata = {
@@ -8,6 +11,11 @@ export const metadata: Metadata = {
 };
 
 export default async function NewDepartmentPage() {
+  const { profile } = await getCachedSessionProfile();
+  if (!canMutateOrgReferences(profile)) {
+    redirect("/departments");
+  }
+
   const divisions = await getDivisionOptions();
 
   return (

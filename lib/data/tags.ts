@@ -5,7 +5,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { TagRow } from "@/types/entities";
 
 export async function getTagsPaginated(page: number) {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const safePage = Math.max(1, Math.floor(page) || 1);
   const from = (safePage - 1) * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
@@ -27,7 +27,7 @@ export async function getTagsPaginated(page: number) {
 }
 
 export async function getTagById(id: string): Promise<TagRow | null> {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.from("tags").select("*").eq("id", id).maybeSingle();
 
   if (error) throw new Error(error.message);

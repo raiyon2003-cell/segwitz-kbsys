@@ -26,8 +26,8 @@ export function DivisionsDirectoryTable({
   departmentsByDivisionId: Record<string, DeptLite[]>;
   showActions: boolean;
 }) {
-  const baseDocsParams = resetDocumentsFiltersKeepScope("active", "table");
   const colSpan = showActions ? 4 : 3;
+  const baseDocs = resetDocumentsFiltersKeepScope("active", "table");
 
   return (
     <Table>
@@ -54,19 +54,18 @@ export function DivisionsDirectoryTable({
         ) : (
           rows.map((row) => {
             const depts = departmentsByDivisionId[row.id] ?? [];
-            const divisionDocsHref = documentsHref(
-              "/documents",
-              mergeDocumentsListParams(baseDocsParams, {
-                divisionId: row.id,
-                departmentId: null,
-                page: 1,
-              }),
-            );
 
             return (
               <Fragment key={row.id}>
                 <TableRow>
-                  <TableCell>{row.name}</TableCell>
+                  <TableCell>
+                    <Link
+                      href={`/divisions/${row.id}`}
+                      className="font-medium text-accent hover:underline"
+                    >
+                      {row.name}
+                    </Link>
+                  </TableCell>
                   <TableCell>
                     <code className="rounded bg-surface-muted px-1.5 py-0.5 text-xs text-foreground-muted">
                       {row.slug}
@@ -114,14 +113,7 @@ export function DivisionsDirectoryTable({
                           {depts.map((d) => (
                             <li key={d.id}>
                               <Link
-                                href={documentsHref(
-                                  "/documents",
-                                  mergeDocumentsListParams(baseDocsParams, {
-                                    divisionId: row.id,
-                                    departmentId: d.id,
-                                    page: 1,
-                                  }),
-                                )}
+                                href={`/departments/${d.id}`}
                                 className="text-sm font-medium text-accent underline-offset-4 hover:underline"
                               >
                                 {d.name}
@@ -136,13 +128,20 @@ export function DivisionsDirectoryTable({
                       )}
                       <p className="text-xs text-foreground-muted">
                         <Link
-                          href={divisionDocsHref}
+                          href={documentsHref(
+                            "/documents",
+                            mergeDocumentsListParams(baseDocs, {
+                              divisionId: row.id,
+                              departmentId: null,
+                              page: 1,
+                            }),
+                          )}
                           className="font-medium text-accent hover:underline"
                         >
                           Open division on Documents
                         </Link>
                         {" · "}
-                        choose a department above to view its library.
+                        pick a department above for the full department page.
                       </p>
                     </div>
                   </TableCell>

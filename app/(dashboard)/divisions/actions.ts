@@ -35,7 +35,7 @@ export async function createDivision(
   const parsed = parseDivisionPayload(formData);
   if (!parsed.ok) return parsed;
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("divisions")
     .insert({
@@ -67,7 +67,7 @@ export async function updateDivision(formData: FormData): Promise<ActionResult> 
   const parsed = parseDivisionPayload(formData);
   if (!parsed.ok) return parsed;
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { error } = await supabase
     .from("divisions")
     .update({
@@ -96,7 +96,7 @@ export async function deleteDivision(formData: FormData): Promise<ActionResult> 
   const id = String(formData.get("id") ?? "").trim();
   if (!id) return { ok: false, error: "Missing record id." };
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from("divisions").delete().eq("id", id);
 
   if (error) {

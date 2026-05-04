@@ -3,28 +3,48 @@ import { DivisionsDirectoryTable } from "@/components/divisions/divisions-direct
 import { PageHeader } from "@/components/layout/page-header";
 import { CrudPagination } from "@/components/crud/crud-pagination";
 import { Button, Card, CardContent } from "@/components/ui";
+import {
+  canMutateOrgReferences,
+  hasFullStaffDocumentAccess,
+} from "@/lib/auth/rbac";
 import { getCachedSessionProfile } from "@/lib/auth/session";
+import { getProfileDepartments } from "@/lib/data/access-control";
 import { getDepartmentsForDivisionIds } from "@/lib/data/departments";
-import { getDivisionsPaginated } from "@/lib/data/divisions";
+import {
+  getDivisionsPaginated,
+  getDivisionsPaginatedForProfile,
+} from "@/lib/data/divisions";
+import {
+  resolveSearchParams,
+  type RouteSearchParams,
+} from "@/lib/next/route-args";
 import { parsePageParam } from "@/lib/pagination";
 
 export default async function DivisionsPage({
   searchParams,
 }: {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: RouteSearchParams | Promise<RouteSearchParams>;
 }) {
-  const page = parsePageParam(searchParams);
+  const sp = await resolveSearchParams(searchParams);
+  const page = parsePageParam(sp);
 
   const { profile } = await getCachedSessionProfile();
-  const canMutateRefs =
-    profile.role === "admin" || profile.role === "member";
+  const canMutateRefs = canMutateOrgReferences(profile);
+  const fullStaff = hasFullStaffDocumentAccess(profile);
 
-  const { rows, total, page: currentPage, pageSize } =
-    await getDivisionsPaginated(page);
+  const { rows, total, page: currentPage, pageSize } = fullStaff
+    ? await getDivisionsPaginated(page)
+    : await getDivisionsPaginatedForProfile(profile.id, page);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const divisionIds = rows.map((r) => r.id);
-  const departmentsFlat = await getDepartmentsForDivisionIds(divisionIds);
+  let departmentsFlat = await getDepartmentsForDivisionIds(divisionIds);
+  if (!fullStaff) {
+    const allowedDeptIds = new Set(await getProfileDepartments(profile.id));
+    departmentsFlat = departmentsFlat.filter((d) =>
+      allowedDeptIds.has(d.id),
+    );
+  }
   const departmentsByDivisionId: Record<
     string,
     { id: string; name: string }[]

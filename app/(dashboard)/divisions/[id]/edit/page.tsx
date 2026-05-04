@@ -1,30 +1,37 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { DivisionForm } from "@/app/(dashboard)/divisions/division-form";
 import { deleteDivision } from "@/app/(dashboard)/divisions/actions";
 import { PageHeader } from "@/components/layout/page-header";
 import { ResourceDeleteButton } from "@/components/crud/resource-delete-button";
 import { Button } from "@/components/ui/button";
+import { canMutateOrgReferences } from "@/lib/auth/rbac";
 import { getCachedSessionProfile } from "@/lib/auth/session";
 import { getDivisionById } from "@/lib/data/divisions";
+import { resolveRouteParams } from "@/lib/next/route-args";
 
-type Props = { params: { id: string } };
+type PageParams = { id: string };
+type Props = { params: PageParams | Promise<PageParams> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const row = await getDivisionById(params.id);
+  const { id } = await resolveRouteParams(params);
+  const row = await getDivisionById(id);
   return {
     title: row ? `Edit · ${row.name}` : "Division",
   };
 }
 
 export default async function EditDivisionPage({ params }: Props) {
-  const division = await getDivisionById(params.id);
+  const { id } = await resolveRouteParams(params);
+  const division = await getDivisionById(id);
   if (!division) notFound();
 
   const { profile } = await getCachedSessionProfile();
-  const canMutateRefs =
-    profile.role === "admin" || profile.role === "member";
+  const canMutateRefs = canMutateOrgReferences(profile);
+  if (!canMutateRefs) {
+    redirect(`/divisions/${division.id}`);
+  }
 
   return (
     <main className="px-6 py-8 lg:px-10">
@@ -37,24 +44,16 @@ export default async function EditDivisionPage({ params }: Props) {
           <Link href="/divisions">
             <Button variant="outline">Back to list</Button>
           </Link>
-          {canMutateRefs ? (
-            <ResourceDeleteButton
-              id={division.id}
-              deleteAction={deleteDivision}
-              noun="division"
-              listHref="/divisions"
-            />
-          ) : null}
+          <ResourceDeleteButton
+            id={division.id}
+            deleteAction={deleteDivision}
+            noun="division"
+            listHref="/divisions"
+          />
         </div>
       </div>
 
-      {canMutateRefs ? (
-        <DivisionForm mode="edit" division={division} />
-      ) : (
-        <p className="text-sm text-foreground-muted">
-          You don&apos;t have permission to edit divisions.
-        </p>
-      )}
+      <DivisionForm mode="edit" division={division} />
     </main>
   );
 }

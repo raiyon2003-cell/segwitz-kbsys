@@ -1,30 +1,37 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { TagForm } from "@/app/(dashboard)/tags/tag-form";
 import { deleteTag } from "@/app/(dashboard)/tags/actions";
 import { ResourceDeleteButton } from "@/components/crud/resource-delete-button";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
+import { canMutateOrgReferences } from "@/lib/auth/rbac";
 import { getCachedSessionProfile } from "@/lib/auth/session";
 import { getTagById } from "@/lib/data/tags";
+import { resolveRouteParams } from "@/lib/next/route-args";
 
-type Props = { params: { id: string } };
+type PageParams = { id: string };
+type Props = { params: PageParams | Promise<PageParams> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const row = await getTagById(params.id);
+  const { id } = await resolveRouteParams(params);
+  const row = await getTagById(id);
   return {
     title: row ? `Edit · ${row.name}` : "Tag",
   };
 }
 
 export default async function EditTagPage({ params }: Props) {
-  const record = await getTagById(params.id);
+  const { id } = await resolveRouteParams(params);
+  const record = await getTagById(id);
   if (!record) notFound();
 
   const { profile } = await getCachedSessionProfile();
-  const canMutateRefs =
-    profile.role === "admin" || profile.role === "member";
+  const canMutateRefs = canMutateOrgReferences(profile);
+  if (!canMutateRefs) {
+    redirect("/tags");
+  }
 
   return (
     <main className="px-6 py-8 lg:px-10">
@@ -37,24 +44,16 @@ export default async function EditTagPage({ params }: Props) {
           <Link href="/tags">
             <Button variant="outline">Back to list</Button>
           </Link>
-          {canMutateRefs ? (
-            <ResourceDeleteButton
-              id={record.id}
-              deleteAction={deleteTag}
-              noun="tag"
-              listHref="/tags"
-            />
-          ) : null}
+          <ResourceDeleteButton
+            id={record.id}
+            deleteAction={deleteTag}
+            noun="tag"
+            listHref="/tags"
+          />
         </div>
       </div>
 
-      {canMutateRefs ? (
-        <TagForm mode="edit" record={record} />
-      ) : (
-        <p className="text-sm text-foreground-muted">
-          You don&apos;t have permission to edit tags.
-        </p>
-      )}
+      <TagForm mode="edit" record={record} />
     </main>
   );
 }

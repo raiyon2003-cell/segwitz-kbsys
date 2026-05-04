@@ -1,12 +1,20 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { DivisionForm } from "@/app/(dashboard)/divisions/division-form";
 import { PageHeader } from "@/components/layout/page-header";
+import { canMutateOrgReferences } from "@/lib/auth/rbac";
+import { getCachedSessionProfile } from "@/lib/auth/session";
 
 export const metadata: Metadata = {
   title: "New division",
 };
 
-export default function NewDivisionPage() {
+export default async function NewDivisionPage() {
+  const { profile } = await getCachedSessionProfile();
+  if (!canMutateOrgReferences(profile)) {
+    redirect("/divisions");
+  }
+
   return (
     <main className="px-6 py-8 lg:px-10">
       <PageHeader
