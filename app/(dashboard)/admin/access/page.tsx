@@ -7,6 +7,7 @@ import type { CrudColumn } from "@/components/crud/crud-table";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
 import { getCachedSessionProfile } from "@/lib/auth/session";
 import { listRBACManagedProfiles } from "@/lib/data/access-control";
+import { getRecentDocumentsForAccessPicker } from "@/lib/data/documents";
 import { loadDocumentFormOptions } from "@/lib/data/document-form-options";
 import type { Profile } from "@/types";
 
@@ -16,9 +17,10 @@ export default async function AdminAccessPage() {
     redirect("/");
   }
 
-  const [managedProfiles, options] = await Promise.all([
+  const [managedProfiles, options, documentPickerRows] = await Promise.all([
     listRBACManagedProfiles(),
     loadDocumentFormOptions(),
+    getRecentDocumentsForAccessPicker(),
   ]);
 
   const columns: CrudColumn<Profile>[] = [
@@ -55,12 +57,12 @@ export default async function AdminAccessPage() {
             <CardTitle className="text-lg">New scoped account</CardTitle>
             <CardDescription>
               Requires <code className="text-xs">SUPABASE_SERVICE_ROLE_KEY</code> in
-              server env (never expose to the browser). Managers and employees must have
-              at least one department.
+              server env (never expose to the browser). Managers need departments;
+              viewers and employees need departments plus at least one document grant.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <CreateScopedAccountForm options={options} />
+            <CreateScopedAccountForm options={options} documents={documentPickerRows} />
           </CardContent>
         </Card>
 
@@ -68,9 +70,9 @@ export default async function AdminAccessPage() {
           <CardHeader>
             <CardTitle className="text-lg">Viewer, employee & manager</CardTitle>
             <CardDescription>
-              Viewers need explicit document ticks. Employees see their departments
-              (optional document whitelist). Managers edit within assigned departments
-              only.
+              Viewers and employees need explicit document ticks. Employees only see
+              those documents (within assigned departments). Managers edit within
+              assigned departments only.
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">

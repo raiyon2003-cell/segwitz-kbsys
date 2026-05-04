@@ -49,6 +49,17 @@ export default async function DocumentsPage({
     uploadNotice === "1" ||
     uploadNotice === "true";
 
+  const noticeRaw = sp.notice;
+  const routeNotice =
+    typeof noticeRaw === "string"
+      ? noticeRaw
+      : Array.isArray(noticeRaw)
+        ? noticeRaw[0]
+        : undefined;
+  const libraryAccessDenied =
+    routeNotice === "no-dept-access" ||
+    routeNotice === "no-division-access";
+
   const [{ profile }, options, pageResult] = await Promise.all([
     getCachedSessionProfile(),
     loadDocumentFormOptions(),
@@ -153,6 +164,18 @@ export default async function DocumentsPage({
           <DocumentUploadSuccessBanner
             dismissHref={documentsHref("/documents", parsed)}
           />
+        ) : null}
+
+        {libraryAccessDenied ? (
+          <div
+            className="rounded-lg border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm text-amber-950 dark:text-amber-50"
+            role="alert"
+          >
+            <strong className="text-foreground">Restricted.</strong>{" "}
+            {routeNotice === "no-division-access"
+              ? "You do not have access to that division library."
+              : "You do not have access to that department library."}
+          </div>
         ) : null}
 
         <DocumentsBrowseNav

@@ -32,14 +32,26 @@ export function SignupForm() {
     const email = String(fd.get("email") ?? "").trim();
     const password = String(fd.get("password") ?? "");
     const fullName = String(fd.get("full_name") ?? "").trim();
+    const requestedDeptLabel = String(
+      fd.get("requested_department_label") ?? "",
+    ).trim();
 
     const supabase = createSupabaseBrowserClient();
+    const metaData: Record<string, string> = {};
+    if (fullName) {
+      metaData.full_name = fullName;
+      metaData.name = fullName;
+    }
+    if (requestedDeptLabel) {
+      metaData.requested_department_label = requestedDeptLabel;
+    }
+
     const { data, error: signError } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
-        data: fullName ? { full_name: fullName, name: fullName } : undefined,
+        data: Object.keys(metaData).length > 0 ? metaData : undefined,
       },
     });
 
@@ -66,7 +78,9 @@ export function SignupForm() {
       <CardHeader>
         <CardTitle>Create account</CardTitle>
         <CardDescription>
-          Use your work email. Your role defaults to member until an admin assigns a higher role.
+          Use your work email. Your account defaults to the member role until an admin assigns a
+          scoped role (manager, employee, viewer). Optional onboarding hints are stored on your
+          auth profile for admins only — they do not grant access by themselves.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -112,6 +126,14 @@ export function SignupForm() {
             autoComplete="new-password"
             minLength={8}
             required
+            disabled={pending}
+          />
+          <Input
+            name="requested_department_label"
+            type="text"
+            label="Department / team (optional)"
+            placeholder="e.g. Clinical Ops — used as an onboarding hint only"
+            autoComplete="organization-title"
             disabled={pending}
           />
           <Button type="submit" className="w-full" size="lg" disabled={pending}>

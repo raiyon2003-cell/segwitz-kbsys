@@ -43,7 +43,7 @@ export default async function DepartmentLibraryPage({
 
   const mayView = await assertDepartmentAccessible(profile, id);
   if (!mayView) {
-    redirect("/documents");
+    redirect("/documents?notice=no-dept-access");
   }
 
   const rows = await getDocumentsForDepartmentLibrary(id);

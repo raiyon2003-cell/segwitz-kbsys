@@ -41,7 +41,7 @@ export default async function DivisionLibraryPage({
 
   const mayView = await assertDivisionAccessible(profile, id);
   if (!mayView) {
-    redirect("/documents");
+    redirect("/documents?notice=no-division-access");
   }
 
   const rows = await getDocumentsForDivisionLibrary(id);

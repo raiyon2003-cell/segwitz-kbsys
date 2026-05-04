@@ -62,7 +62,7 @@ export function ViewerAccessEditor({
     accessRole === "manager"
       ? "Managers upload and edit documents only within these departments."
       : accessRole === "employee"
-        ? "Employees read documents in these departments. Leave document picks empty to allow every document in those departments."
+        ? "Employees can open only documents listed below (within these departments)."
         : "Viewers only see documents you tick below, and only inside selected departments.";
 
   const showDocuments = accessRole !== "manager";
@@ -115,7 +115,7 @@ export function ViewerAccessEditor({
             Showing up to 500 most recently updated non-archived documents, filtered by
             departments checked above.
             {accessRole === "employee"
-              ? " Leave all unchecked to expose every document in those departments."
+              ? " Tick each document this employee may open."
               : " Tick each document this user may open."}
           </p>
           {selectedDeptIds.size === 0 ? (

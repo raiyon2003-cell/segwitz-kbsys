@@ -35,6 +35,11 @@ export async function createScopedAccountAction(
     .map(String)
     .filter(Boolean);
 
+  const documentIdsRaw = formData
+    .getAll("document_id")
+    .map(String)
+    .filter(Boolean);
+
   const roleRaw = String(formData.get("account_role") ?? "viewer").trim();
   const accountRole =
     roleRaw === "employee" || roleRaw === "manager" ? roleRaw : "viewer";
@@ -46,6 +51,13 @@ export async function createScopedAccountAction(
     return {
       ok: false,
       message: "Managers and employees need at least one assigned department.",
+    };
+  }
+
+  if (accountRole === "viewer" && departmentIds.length === 0) {
+    return {
+      ok: false,
+      message: "Viewers need at least one assigned department.",
     };
   }
 
@@ -99,6 +111,54 @@ export async function createScopedAccountAction(
       .insert(rows);
     if (deptErr) {
       return { ok: false, message: deptErr.message };
+    }
+  }
+
+  const validGrantIds = new Set<string>();
+  if (
+    (accountRole === "viewer" || accountRole === "employee") &&
+    departmentIds.length > 0 &&
+    documentIdsRaw.length > 0
+  ) {
+    const { data: docRows, error: docErr } = await supabase
+      .from("documents")
+      .select("id")
+      .in("id", documentIdsRaw)
+      .in("department_id", departmentIds);
+
+    if (docErr) {
+      return { ok: false, message: docErr.message };
+    }
+    for (const r of docRows ?? []) {
+      validGrantIds.add(r.id as string);
+    }
+  }
+
+  const grants = documentIdsRaw
+    .filter((id) => validGrantIds.has(id))
+    .map((document_id) => ({ profile_id: userId, document_id }));
+
+  if (accountRole === "employee" && departmentIds.length > 0 && grants.length === 0) {
+    return {
+      ok: false,
+      message:
+        "Employees must have at least one assigned document in the selected departments.",
+    };
+  }
+
+  if (accountRole === "viewer" && grants.length === 0) {
+    return {
+      ok: false,
+      message: "Viewers must have at least one assigned document.",
+    };
+  }
+
+  if (grants.length > 0) {
+    const { error: grantErr } = await supabase
+      .from("profile_document_access")
+      .insert(grants);
+    if (grantErr) {
+      return { ok: false, message: grantErr.message };
     }
   }
 
@@ -162,6 +222,13 @@ export async function updateScopedAccessAction(
     };
   }
 
+  if (role === "viewer" && departmentIds.length === 0) {
+    return {
+      ok: false,
+      message: "Assign at least one department for viewers.",
+    };
+  }
+
   if (role === "manager") {
     documentIds = [];
   }
@@ -180,6 +247,25 @@ export async function updateScopedAccessAction(
     for (const r of docRows ?? []) {
       validIds.add(r.id as string);
     }
+  }
+
+  const grantsPreview = documentIds
+    .filter((id) => validIds.has(id))
+    .map((document_id) => ({ profile_id: userId, document_id }));
+
+  if (role === "employee" && departmentIds.length > 0 && grantsPreview.length === 0) {
+    return {
+      ok: false,
+      message:
+        "Employees must have at least one assigned document in the selected departments.",
+    };
+  }
+
+  if (role === "viewer" && grantsPreview.length === 0) {
+    return {
+      ok: false,
+      message: "Viewers must have at least one assigned document.",
+    };
   }
 
   const { error: delD } = await supabase
@@ -210,14 +296,10 @@ export async function updateScopedAccessAction(
     return { ok: false, message: delDoc.message };
   }
 
-  const grants = documentIds
-    .filter((id) => validIds.has(id))
-    .map((document_id) => ({ profile_id: userId, document_id }));
-
-  if (grants.length > 0) {
+  if (grantsPreview.length > 0) {
     const { error: insG } = await supabase
       .from("profile_document_access")
-      .insert(grants);
+      .insert(grantsPreview);
     if (insG) {
       return { ok: false, message: insG.message };
     }

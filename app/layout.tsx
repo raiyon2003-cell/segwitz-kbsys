@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { resolveMetadataBaseUrl } from "@/lib/metadata/metadata-base";
 import { cn } from "@/lib/utils";
 import "./globals.css";
-
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
 
 export const metadata: Metadata = {
   title: {
@@ -13,7 +10,7 @@ export const metadata: Metadata = {
     template: "%s · Segwitz KB",
   },
   description: "Internal knowledge base and document management",
-  metadataBase: new URL(siteUrl),
+  metadataBase: resolveMetadataBaseUrl(),
 };
 
 export const viewport = {

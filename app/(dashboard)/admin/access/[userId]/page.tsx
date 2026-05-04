@@ -85,7 +85,7 @@ export default async function AdminAccessUserPage({
         </Link>
         <PageHeader
           title={targetProfile.email ?? targetProfile.id.slice(0, 8)}
-          description="Assign departments and (for viewers and employees) optional documents."
+          description="Assign departments and explicit documents for viewers and employees."
         />
       </div>
 
