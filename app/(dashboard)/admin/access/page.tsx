@@ -8,7 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getCachedSessionProfile } from "@/lib/auth/session";
 import { listRBACManagedProfiles } from "@/lib/data/access-control";
 import { getRecentDocumentsForAccessPicker } from "@/lib/data/documents";
+import type { DocumentPickerRow } from "@/lib/data/documents";
 import { loadDocumentFormOptions } from "@/lib/data/document-form-options";
+import type { DocumentFormOptionSets } from "@/lib/data/document-form-options";
 import type { Profile } from "@/types";
 
 export default async function AdminAccessPage() {
@@ -17,11 +19,40 @@ export default async function AdminAccessPage() {
     redirect("/");
   }
 
-  const [managedProfiles, options, documentPickerRows] = await Promise.all([
-    listRBACManagedProfiles(),
-    loadDocumentFormOptions(),
-    getRecentDocumentsForAccessPicker(),
-  ]);
+  let managedProfiles: Profile[] = [];
+  let options: DocumentFormOptionSets = {
+    divisions: [],
+    departments: [],
+    documentTypes: [],
+    processCategories: [],
+    tags: [],
+    profiles: [],
+  };
+  let documentPickerRows: DocumentPickerRow[] = [];
+  let pageError: string | null = null;
+
+  try {
+    [managedProfiles, options, documentPickerRows] = await Promise.all([
+      listRBACManagedProfiles(),
+      loadDocumentFormOptions(),
+      getRecentDocumentsForAccessPicker(),
+    ]);
+  } catch (error) {
+    console.error("[admin/access] failed to load access-control data", {
+      user: profile.id,
+      role: profile.role,
+      error,
+    });
+    pageError =
+      "Some access-control data could not be loaded. You can still use this page, but results may be incomplete.";
+  }
+
+  console.log("[admin/access] data loaded", {
+    user: profile.id,
+    role: profile.role,
+    managedProfiles: managedProfiles.length,
+    documents: documentPickerRows.length,
+  });
 
   const columns: CrudColumn<Profile>[] = [
     {
@@ -50,6 +81,11 @@ export default async function AdminAccessPage() {
         title="Access control"
         description="Create scoped accounts (viewer, employee, manager), assign departments, and optionally restrict documents."
       />
+      {pageError ? (
+        <p className="mt-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+          {pageError}
+        </p>
+      ) : null}
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
         <Card className="border-border-subtle">

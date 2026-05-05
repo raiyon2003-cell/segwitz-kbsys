@@ -141,11 +141,32 @@ export async function getProfileDocumentGrants(
   userId: string,
 ): Promise<string[]> {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("profile_document_access")
-    .select("document_id")
-    .eq("profile_id", userId);
-
-  if (error) throw new Error(error.message);
-  return (data ?? []).map((r) => r.document_id as string);
+  const documentAccessTables = ["profile_document_access", "user_document_access"] as const;
+  for (const table of documentAccessTables) {
+    const { data, error } = await supabase
+      .from(table)
+      .select("document_id")
+      .eq("profile_id", userId);
+    if (!error) {
+      return (data ?? []).map((r) => r.document_id as string);
+    }
+    const missingTable =
+      error.code === "42P01" ||
+      error.message.toLowerCase().includes("does not exist") ||
+      error.message.toLowerCase().includes("relation");
+    if (!missingTable || table === documentAccessTables[documentAccessTables.length - 1]) {
+      console.error("[access-control] getProfileDocumentGrants query failed", {
+        userId,
+        table,
+        error,
+      });
+      throw new Error(error.message);
+    }
+    console.error("[access-control] falling back to alternate document access table", {
+      userId,
+      table,
+      error,
+    });
+  }
+  return [];
 }

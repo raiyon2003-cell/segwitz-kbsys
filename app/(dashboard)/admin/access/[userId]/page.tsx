@@ -10,7 +10,9 @@ import {
   getProfileDocumentGrants,
 } from "@/lib/data/access-control";
 import { getRecentDocumentsForAccessPicker } from "@/lib/data/documents";
+import type { DocumentPickerRow } from "@/lib/data/documents";
 import { loadDocumentFormOptions } from "@/lib/data/document-form-options";
+import type { DocumentFormOptionSets } from "@/lib/data/document-form-options";
 import { getCachedSessionProfile } from "@/lib/auth/session";
 import {
   resolveRouteParams,
@@ -45,16 +47,51 @@ export default async function AdminAccessUserPage({
   }
 
   const supabase = await createSupabaseServerClient();
-  const { data: target, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", userId)
-    .maybeSingle();
+  let targetProfile: Profile | null = null;
+  let pageError: string | null = null;
+  try {
+    const { data: target, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
+      .maybeSingle();
+    if (error) {
+      console.error("[admin/access/user] failed to load profile", { userId, error });
+      pageError = "Could not load this user profile right now.";
+    } else if (!target) {
+      notFound();
+    } else {
+      targetProfile = target as Profile;
+    }
+  } catch (error) {
+    console.error("[admin/access/user] profile query crashed", { userId, error });
+    pageError = "Could not load this user profile right now.";
+  }
 
-  if (error) throw new Error(error.message);
-  if (!target) notFound();
-
-  const targetProfile = target as Profile;
+  if (!targetProfile) {
+    return (
+      <main className="px-6 py-8 lg:px-10">
+        <div className="mb-6">
+          <Link
+            href="/admin/access"
+            className={cn(
+              "mb-4 inline-flex h-10 items-center justify-center rounded-md border border-border bg-transparent px-4 text-sm font-medium text-foreground transition-colors hover:bg-surface-muted",
+            )}
+          >
+            ← Back to access control
+          </Link>
+          <PageHeader title="Access control" description="User access could not be loaded." />
+        </div>
+        <Card className="border-border-subtle">
+          <CardContent className="py-6">
+            <p className="text-sm text-foreground-muted">
+              {pageError ?? "No data available"}
+            </p>
+          </CardContent>
+        </Card>
+      </main>
+    );
+  }
   if (!isScopedRole(targetProfile.role)) {
     redirect("/admin/access");
   }
@@ -65,12 +102,46 @@ export default async function AdminAccessUserPage({
     sp.created === "true" ||
     sp.created === "success";
 
-  const [options, documents, initialDeptIds, initialDocIds] = await Promise.all([
-    loadDocumentFormOptions(),
-    getRecentDocumentsForAccessPicker(),
-    getProfileDepartments(userId),
-    getProfileDocumentGrants(userId),
-  ]);
+  let options: DocumentFormOptionSets = {
+    divisions: [],
+    departments: [],
+    documentTypes: [],
+    processCategories: [],
+    tags: [],
+    profiles: [],
+  };
+  let documents: DocumentPickerRow[] = [];
+  let initialDeptIds: string[] = [];
+  let initialDocIds: string[] = [];
+  try {
+    [options, documents, initialDeptIds, initialDocIds] = await Promise.all([
+      loadDocumentFormOptions(),
+      getRecentDocumentsForAccessPicker(),
+      getProfileDepartments(userId),
+      getProfileDocumentGrants(userId),
+    ]);
+  } catch (error) {
+    console.error("[admin/access/user] failed to load access dependencies", {
+      user: profile.id,
+      role: profile.role,
+      targetUserId: userId,
+      targetRole: targetProfile.role,
+      error,
+    });
+    pageError = "Some access data could not be loaded. You can still review this user.";
+  }
+
+  console.log("[admin/access/user] loaded data", {
+    user: profile.id,
+    role: profile.role,
+    targetUserId: userId,
+    targetRole: targetProfile.role,
+    fetchedDocuments: documents.length,
+    accessMappings: {
+      departments: initialDeptIds.length,
+      documents: initialDocIds.length,
+    },
+  });
 
   return (
     <main className="px-6 py-8 lg:px-10">
@@ -108,14 +179,23 @@ export default async function AdminAccessUserPage({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ViewerAccessEditor
-            userId={userId}
-            accessRole={targetProfile.role}
-            options={options}
-            documents={documents}
-            initialDepartmentIds={initialDeptIds}
-            initialDocumentIds={initialDocIds}
-          />
+          {pageError ? (
+            <p className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+              {pageError}
+            </p>
+          ) : null}
+          {options.departments.length === 0 && documents.length === 0 ? (
+            <p className="text-sm text-foreground-muted">No data available</p>
+          ) : (
+            <ViewerAccessEditor
+              userId={userId}
+              accessRole={targetProfile.role}
+              options={options}
+              documents={documents}
+              initialDepartmentIds={initialDeptIds}
+              initialDocumentIds={initialDocIds}
+            />
+          )}
         </CardContent>
       </Card>
     </main>
