@@ -82,7 +82,7 @@ export default async function AdminAccessPage() {
         description="Create scoped accounts (viewer, employee, manager), assign departments, and optionally restrict documents."
       />
       {pageError ? (
-        <p className="mt-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+        <p className="mt-4 rounded-md border border-brand-olive/40 bg-brand-olive/10 px-4 py-2 text-sm text-foreground">
           {pageError}
         </p>
       ) : null}

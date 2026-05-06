@@ -95,7 +95,7 @@ export function SignupForm() {
           ) : null}
           {info ? (
             <p
-              className="rounded-md border border-emerald-500/35 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-900 dark:text-emerald-50"
+              className="rounded-md border border-brand-lime/35 bg-brand-lime/10 px-3 py-2 text-sm text-brand-charcoal"
               role="status"
             >
               {info}

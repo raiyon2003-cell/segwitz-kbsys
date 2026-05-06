@@ -140,15 +140,15 @@ export function DocumentForm(props: Props) {
     >
       {pending ? (
         <div
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-gray-950/40 backdrop-blur-sm dark:bg-slate-950/60"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-brand-teal/40 backdrop-blur-sm"
           role="progressbar"
           aria-valuetext={props.mode === "create" ? "Uploading PDF" : "Saving document"}
           aria-busy="true"
         >
-          <div className="h-1 w-56 overflow-hidden rounded-full bg-white/40 dark:bg-slate-700/80">
+          <div className="h-1 w-56 overflow-hidden rounded-full bg-white/40">
             <div className="h-full w-1/3 animate-upload-bar rounded-full bg-accent" />
           </div>
-          <p className="rounded-lg bg-white/95 px-4 py-2 text-sm font-medium text-gray-900 shadow-lg dark:bg-slate-900 dark:text-slate-50">
+          <p className="rounded-lg bg-surface px-4 py-2 text-sm font-semibold text-foreground shadow-shell">
             {props.mode === "create"
               ? "Uploading PDF and saving metadata…"
               : "Saving changes…"}

@@ -19,6 +19,13 @@ const config: Config = {
         "upload-bar": "upload-bar 1.1s ease-in-out infinite",
       },
       colors: {
+        brand: {
+          lime: "hsl(var(--brand-lime) / <alpha-value>)",
+          olive: "hsl(var(--brand-olive) / <alpha-value>)",
+          charcoal: "hsl(var(--brand-charcoal) / <alpha-value>)",
+          teal: "hsl(var(--brand-teal) / <alpha-value>)",
+          steel: "hsl(var(--brand-steel) / <alpha-value>)",
+        },
         surface: {
           DEFAULT: "hsl(var(--surface) / <alpha-value>)",
           muted: "hsl(var(--surface-muted) / <alpha-value>)",

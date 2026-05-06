@@ -162,7 +162,7 @@ export default async function AdminAccessUserPage({
 
       {created ? (
         <div
-          className="mb-6 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-950 dark:text-emerald-50"
+          className="mb-6 rounded-lg border border-brand-lime/35 bg-brand-lime/10 px-4 py-3 text-sm text-brand-charcoal"
           role="status"
         >
           Account created. Configure department access below so the user can sign in with
@@ -180,7 +180,7 @@ export default async function AdminAccessUserPage({
         </CardHeader>
         <CardContent>
           {pageError ? (
-            <p className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+            <p className="mb-4 rounded-md border border-brand-olive/40 bg-brand-olive/10 px-4 py-2 text-sm text-foreground">
               {pageError}
             </p>
           ) : null}

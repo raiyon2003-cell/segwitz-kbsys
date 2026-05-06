@@ -9,7 +9,7 @@ import {
   Minimize2,
   RefreshCw,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
@@ -31,7 +31,7 @@ async function fetchFreshSignedUrl(documentId: string): Promise<string | null> {
   return body.url ?? null;
 }
 
-export function DocumentPdfPanel({
+function DocumentPdfPanelComponent({
   documentId,
   initialUrl,
   filename,
@@ -66,7 +66,7 @@ export function DocumentPdfPanel({
     return () => document.removeEventListener("fullscreenchange", onFsChange);
   }, [onFsChange]);
 
-  async function refreshUrl() {
+  const refreshUrl = useCallback(async () => {
     setLoadError(null);
     setLoading(true);
     const next = await fetchFreshSignedUrl(documentId);
@@ -76,9 +76,9 @@ export function DocumentPdfPanel({
       return;
     }
     setPdfUrl(next);
-  }
+  }, [documentId]);
 
-  async function toggleFullscreen() {
+  const toggleFullscreen = useCallback(async () => {
     const el = viewerWrapRef.current;
     if (!el) return;
     try {
@@ -90,7 +90,7 @@ export function DocumentPdfPanel({
     } catch {
       /* unsupported or denied */
     }
-  }
+  }, []);
 
   const docFile = pdfUrl;
 
@@ -233,3 +233,5 @@ export function DocumentPdfPanel({
     </div>
   );
 }
+
+export const DocumentPdfPanel = memo(DocumentPdfPanelComponent);

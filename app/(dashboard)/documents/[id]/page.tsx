@@ -1,9 +1,9 @@
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { DocumentDetailMeta } from "@/components/documents/document-detail-meta";
-import { DocumentPdfPanel } from "@/components/documents/document-pdf-panel";
 import { Button } from "@/components/ui/button";
 import { canEditDocumentRecords } from "@/lib/auth/rbac";
 import { getCachedSessionProfile } from "@/lib/auth/session";
@@ -24,6 +24,24 @@ import {
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 type Props = { params: { id: string } | Promise<{ id: string }> };
+
+const DocumentPdfPanel = dynamic(
+  () =>
+    import("@/components/documents/document-pdf-panel").then(
+      (mod) => mod.DocumentPdfPanel,
+    ),
+  {
+    loading: () => (
+      <div className="flex min-h-[520px] items-center justify-center rounded-xl border border-border-subtle bg-surface-muted/40 p-6">
+        <div className="w-full max-w-md animate-pulse space-y-3">
+          <div className="h-4 w-2/3 rounded bg-surface-muted" />
+          <div className="h-3 w-1/3 rounded bg-surface-muted" />
+          <div className="h-80 w-full rounded-lg bg-surface-muted" />
+        </div>
+      </div>
+    ),
+  },
+);
 
 async function resolveRouteId(params: Props["params"]): Promise<string> {
   const { id } = await resolveRouteParams(params);
@@ -150,7 +168,7 @@ export default async function DocumentDetailPage({
 
         {showUpdated ? (
           <div
-            className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-emerald-500/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-950 dark:text-emerald-50"
+            className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-brand-lime/35 bg-brand-lime/10 px-4 py-3 text-sm text-brand-charcoal"
             role="status"
           >
             <p className="font-semibold">
@@ -158,7 +176,7 @@ export default async function DocumentDetailPage({
             </p>
             <Link
               href={`/documents/${doc.id}`}
-              className="shrink-0 font-medium text-emerald-800 underline-offset-4 hover:underline dark:text-emerald-200"
+              className="shrink-0 font-semibold text-brand-teal underline-offset-4 hover:underline"
             >
               Dismiss
             </Link>

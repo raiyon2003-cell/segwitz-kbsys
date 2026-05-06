@@ -6,7 +6,7 @@ type Props = { dismissHref: string };
 export function DocumentUploadSuccessBanner({ dismissHref }: Props) {
   return (
     <div
-      className="mb-6 flex flex-wrap items-start justify-between gap-3 rounded-lg border border-emerald-500/35 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-950 dark:text-emerald-100"
+      className="mb-6 flex flex-wrap items-start justify-between gap-3 rounded-lg border border-brand-lime/35 bg-brand-lime/10 px-4 py-3 text-sm text-brand-charcoal"
       role="status"
     >
       <p>
@@ -15,7 +15,7 @@ export function DocumentUploadSuccessBanner({ dismissHref }: Props) {
       </p>
       <Link
         href={dismissHref}
-        className="shrink-0 text-sm font-medium text-emerald-800 underline-offset-4 hover:underline dark:text-emerald-200"
+        className="shrink-0 text-sm font-semibold text-brand-teal underline-offset-4 hover:underline"
       >
         Dismiss
       </Link>

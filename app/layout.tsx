@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import { resolveMetadataBaseUrl } from "@/lib/metadata/metadata-base";
 import { cn } from "@/lib/utils";
 import "./globals.css";
@@ -17,11 +16,6 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
 };
-
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export default function RootLayout({
   children,
@@ -41,8 +35,7 @@ export default function RootLayout({
       </head>
       <body
         className={cn(
-          inter.className,
-          "min-h-full bg-gray-50 text-gray-900 antialiased dark:bg-slate-950 dark:text-slate-100",
+          "min-h-full bg-surface text-foreground antialiased",
         )}
       >
         {children}

@@ -1,8 +1,9 @@
+import { memo } from "react";
 import { Bell, Search } from "lucide-react";
 import { getInitials } from "@/lib/display";
 import type { Profile } from "@/types";
 
-export function AppTopbar({
+function AppTopbarComponent({
   profile,
   email,
 }: {
@@ -17,34 +18,8 @@ export function AppTopbar({
     "Signed in";
 
   return (
-    <header
-      className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-4 border-b border-border-subtle bg-surface/90 px-4 backdrop-blur md:px-6 lg:px-8"
-      style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 40,
-        display: "flex",
-        height: "3.5rem",
-        flexShrink: 0,
-        alignItems: "center",
-        gap: "1rem",
-        paddingLeft: "1rem",
-        paddingRight: "1rem",
-        borderBottom: "1px solid #e2e8f0",
-        backgroundColor: "rgba(255, 255, 255, 0.92)",
-      }}
-    >
-      <div
-        className="relative mx-auto flex w-full max-w-4xl flex-1 items-center"
-        style={{
-          position: "relative",
-          display: "flex",
-          width: "100%",
-          maxWidth: "56rem",
-          flex: "1 1 auto",
-          alignItems: "center",
-        }}
-      >
+    <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-4 border-b border-border-subtle bg-surface/95 px-4 shadow-sm backdrop-blur md:px-6 lg:px-8">
+      <div className="relative mx-auto flex w-full max-w-4xl flex-1 items-center">
         <Search
           className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-foreground-faint"
           aria-hidden
@@ -56,28 +31,19 @@ export function AppTopbar({
           id="global-search"
           type="search"
           placeholder="Search documents, divisions…"
-          className="h-10 w-full rounded-md border border-border bg-surface-muted/60 pl-10 pr-4 text-sm text-foreground placeholder:text-foreground-faint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:focus-visible:ring-offset-slate-950"
+          className="h-10 w-full rounded-md border border-border bg-surface-muted/70 pl-10 pr-4 text-sm text-foreground placeholder:text-foreground-faint shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
           autoComplete="off"
         />
       </div>
       <button
         type="button"
-        className="relative inline-flex size-10 shrink-0 items-center justify-center rounded-md border border-border-subtle bg-surface-muted/60 text-foreground-muted transition-colors hover:bg-surface-muted hover:text-foreground"
+        className="relative inline-flex size-10 shrink-0 items-center justify-center rounded-md border border-border-subtle bg-surface-muted/60 text-foreground-muted hover:bg-surface-muted hover:text-foreground"
         aria-label="Notifications"
       >
         <Bell className="size-[18px]" />
         <span className="absolute right-2 top-2 size-2 rounded-full bg-accent" />
       </button>
-      <div
-        className="flex flex-col items-end gap-0.5"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          gap: "2px",
-          textAlign: "right",
-        }}
-      >
+      <div className="hidden flex-col items-end gap-0.5 text-right sm:flex">
         <span className="max-w-[140px] truncate text-xs font-medium text-foreground sm:inline">
           {display}
         </span>
@@ -87,7 +53,7 @@ export function AppTopbar({
       </div>
       <button
         type="button"
-        className="flex size-10 shrink-0 items-center justify-center rounded-full border border-border-subtle bg-gradient-to-br from-accent/20 to-accent/5 text-xs font-semibold text-foreground ring-1 ring-border-subtle"
+        className="flex size-10 shrink-0 items-center justify-center rounded-full border border-brand-olive/50 bg-gradient-to-br from-brand-steel/30 to-brand-lime/20 text-xs font-semibold text-foreground ring-1 ring-border-subtle"
         aria-label={`Account — ${display}`}
       >
         {initials}
@@ -95,3 +61,5 @@ export function AppTopbar({
     </header>
   );
 }
+
+export const AppTopbar = memo(AppTopbarComponent);

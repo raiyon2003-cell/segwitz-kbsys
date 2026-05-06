@@ -75,7 +75,7 @@ export function ViewerAccessEditor({
         <p
           className={
             state.ok
-              ? "rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-900 dark:text-emerald-100"
+              ? "rounded-md border border-brand-lime/35 bg-brand-lime/10 px-3 py-2 text-sm text-brand-charcoal"
               : "rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-800 dark:text-red-100"
           }
         >

@@ -18,11 +18,11 @@ export default async function DashboardPage() {
 
       {d.setupMessage ? (
         <div
-          className="mb-6 rounded-lg border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm text-amber-950 dark:text-amber-100"
+          className="mb-6 rounded-lg border border-brand-olive/40 bg-brand-olive/10 px-4 py-3 text-sm text-foreground"
           role="alert"
         >
           <p className="font-semibold">Database setup required</p>
-          <p className="mt-1 text-amber-900/90 dark:text-amber-50/90">
+          <p className="mt-1 text-foreground-muted">
             {d.setupMessage}
           </p>
         </div>

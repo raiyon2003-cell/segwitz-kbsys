@@ -10,11 +10,11 @@ export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantClasses: Record<NonNullable<ButtonProps["variant"]>, string> = {
   primary:
-    "bg-accent text-accent-foreground shadow-sm hover:opacity-[0.92] active:opacity-[0.88]",
+    "bg-brand-lime text-white shadow-sm hover:bg-brand-charcoal active:bg-brand-charcoal/90",
   secondary:
-    "bg-surface-muted text-foreground border border-border hover:bg-surface-muted/80",
+    "bg-brand-steel text-white shadow-sm hover:bg-brand-teal active:bg-brand-teal/90",
   outline:
-    "border border-border bg-transparent text-foreground hover:bg-surface-muted",
+    "border border-border bg-surface text-foreground hover:bg-surface-muted",
   ghost: "text-foreground-muted hover:bg-surface-muted hover:text-foreground",
 };
 
@@ -40,7 +40,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         type={type}
         className={cn(
-          "inline-flex items-center justify-center font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50 dark:focus-visible:ring-offset-slate-950 disabled:pointer-events-none disabled:opacity-50",
+          "inline-flex items-center justify-center font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:pointer-events-none disabled:opacity-50",
           variantClasses[variant],
           sizeClasses[size],
           className,
