@@ -41,15 +41,14 @@ export function CreateScopedAccountForm({
   const [selectedDeptIds, setSelectedDeptIds] = useState<Set<string>>(
     () => new Set(),
   );
+  const departments = [...options.departments].sort((a, b) =>
+    a.name.localeCompare(b.name),
+  );
   const departmentDropdown = useMemo(() => {
     const dynamic = departments.map((d) => d.name).filter(Boolean);
     const values = dynamic.length > 0 ? dynamic : FALLBACK_DEPARTMENTS;
     return Array.from(new Set(values));
   }, [departments]);
-
-  const departments = [...options.departments].sort((a, b) =>
-    a.name.localeCompare(b.name),
-  );
 
   const filteredDocs = useMemo(
     () =>
