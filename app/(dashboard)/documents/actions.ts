@@ -9,6 +9,7 @@ import {
   tryLogDocumentActivity,
 } from "@/lib/activity";
 import {
+  guardDocumentDelete,
   guardDocumentEditor,
   guardDocumentUploader,
 } from "@/lib/auth/guard-document-editor";
@@ -331,7 +332,7 @@ export async function updateDocument(formData: FormData): Promise<ActionResult> 
 }
 
 export async function archiveDocument(formData: FormData): Promise<ActionResult> {
-  const gate = await guardDocumentEditor();
+  const gate = await guardDocumentDelete();
   if (gate.denied) return { ok: false, error: gate.message };
 
   const id = String(formData.get("id") ?? "").trim();

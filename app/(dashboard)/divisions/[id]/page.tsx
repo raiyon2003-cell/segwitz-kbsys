@@ -6,9 +6,11 @@ import { Card, CardContent } from "@/components/ui";
 import { getCachedSessionProfile } from "@/lib/auth/session";
 import { assertDivisionAccessible } from "@/lib/data/access-control";
 import {
+  canDownloadDocuments,
   canDeleteOrArchiveDocuments,
   canEditDocumentRecords,
   canMutateOrgReferences,
+  canViewDocuments,
 } from "@/lib/auth/rbac";
 import { getDocumentsForDivisionLibrary } from "@/lib/data/documents";
 import { getDivisionById } from "@/lib/data/divisions";
@@ -36,6 +38,9 @@ export default async function DivisionLibraryPage({
   }
 
   const { profile } = await getCachedSessionProfile();
+  if (!canViewDocuments(profile)) {
+    redirect("/");
+  }
   const division = await getDivisionById(id);
   if (!division) notFound();
 
@@ -47,6 +52,7 @@ export default async function DivisionLibraryPage({
   const rows = await getDocumentsForDivisionLibrary(id);
   const canEditDocs = canEditDocumentRecords(profile);
   const canArchiveDocs = canDeleteOrArchiveDocuments(profile);
+  const canDownload = canDownloadDocuments(profile);
   const showDivisionAdminLinks = canMutateOrgReferences(profile);
 
   const docsHref = documentsHref(
@@ -94,6 +100,7 @@ export default async function DivisionLibraryPage({
               rows={rows}
               canEdit={canEditDocs}
               canArchive={canArchiveDocs}
+              canDownload={canDownload}
             />
           )}
         </CardContent>

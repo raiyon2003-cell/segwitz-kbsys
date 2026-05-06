@@ -5,7 +5,11 @@ import type { Metadata } from "next";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { DocumentDetailMeta } from "@/components/documents/document-detail-meta";
 import { Button } from "@/components/ui/button";
-import { canEditDocumentRecords } from "@/lib/auth/rbac";
+import {
+  canDownloadDocuments,
+  canEditDocumentRecords,
+  canViewDocuments,
+} from "@/lib/auth/rbac";
 import { getCachedSessionProfile } from "@/lib/auth/session";
 import { getDocumentDetail } from "@/lib/data/document-detail";
 import { getDepartmentById } from "@/lib/data/departments";
@@ -140,6 +144,11 @@ export default async function DocumentDetailPage({
     updatedFlag === "true";
 
   const canEditRecord = canEditDocumentRecords(profile);
+  const canDownload = canDownloadDocuments(profile);
+  const canView = canViewDocuments(profile);
+  if (!canView) {
+    redirect("/");
+  }
 
   const supabase = await createSupabaseServerClient();
   const signedUrl = await getSignedPdfDownloadUrl(
@@ -208,9 +217,11 @@ export default async function DocumentDetailPage({
                 </Button>
               </Link>
             ) : null}
-            <a href={`/api/documents/${doc.id}/download`}>
-              <Button className="gap-2">Download PDF</Button>
-            </a>
+            {canDownload ? (
+              <a href={`/api/documents/${doc.id}/download`}>
+                <Button className="gap-2">Download PDF</Button>
+              </a>
+            ) : null}
           </div>
         </header>
 
@@ -234,7 +245,7 @@ export default async function DocumentDetailPage({
                 Zoom with browser controls · Use fullscreen for focus reading
               </p>
             </div>
-            {signedUrl ? (
+            {signedUrl && canDownload ? (
               <DocumentPdfPanel
                 documentId={doc.id}
                 initialUrl={signedUrl}
@@ -242,14 +253,9 @@ export default async function DocumentDetailPage({
               />
             ) : (
               <div className="rounded-xl border border-dashed border-border-subtle bg-surface-muted/40 px-6 py-16 text-center text-sm text-foreground-muted">
-                Preview unavailable. Try{" "}
-                <a
-                  href={`/api/documents/${doc.id}/download`}
-                  className="font-medium text-accent hover:underline"
-                >
-                  downloading the PDF
-                </a>
-                .
+                {canDownload
+                  ? "Preview unavailable for this document."
+                  : "You do not have permission to download this document."}
               </div>
             )}
           </section>

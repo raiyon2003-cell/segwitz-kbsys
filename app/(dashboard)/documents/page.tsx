@@ -11,11 +11,14 @@ import type { CrudColumn } from "@/components/crud/crud-table";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
 import {
+  canDownloadDocuments,
   canDeleteOrArchiveDocuments,
   canEditDocumentRecords,
   canUploadDocuments,
+  canViewDocuments,
 } from "@/lib/auth/rbac";
 import { getCachedSessionProfile } from "@/lib/auth/session";
+import { redirect } from "next/navigation";
 import { getDocumentsPaginated } from "@/lib/data/documents";
 import { loadDocumentFormOptions } from "@/lib/data/document-form-options";
 import {
@@ -69,6 +72,11 @@ export default async function DocumentsPage({
   const canUpload = canUploadDocuments(profile);
   const canEditDocs = canEditDocumentRecords(profile);
   const canArchiveDocs = canDeleteOrArchiveDocuments(profile);
+  const canDownload = canDownloadDocuments(profile);
+  const canView = canViewDocuments(profile);
+  if (!canView) {
+    redirect("/");
+  }
 
   const { rows, total, page: currentPage, pageSize } = pageResult;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -123,14 +131,16 @@ export default async function DocumentsPage({
       header: "",
       className: "w-[120px]",
       cell: (r) => (
-        <a
-          href={`/api/documents/${r.id}/download`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm font-medium text-accent hover:underline"
-        >
-          PDF
-        </a>
+        canDownload ? (
+          <a
+            href={`/api/documents/${r.id}/download`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-accent hover:underline"
+          >
+            PDF
+          </a>
+        ) : null
       ),
     },
   ];
@@ -255,6 +265,7 @@ export default async function DocumentsPage({
                     rows={rows}
                     canEdit={canEditDocs}
                     canArchive={canArchiveDocs}
+                    canDownload={canDownload}
                   />
                 )
               ) : rows.length === 0 ? (

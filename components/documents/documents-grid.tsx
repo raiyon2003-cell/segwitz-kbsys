@@ -15,10 +15,12 @@ export function DocumentsGrid({
   rows,
   canEdit,
   canArchive,
+  canDownload,
 }: {
   rows: DocumentListEmbed[];
   canEdit: boolean;
   canArchive: boolean;
+  canDownload?: boolean;
 }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -49,14 +51,16 @@ export function DocumentsGrid({
           </div>
 
           <div className="mt-5 flex flex-wrap gap-3 border-t border-border-subtle pt-4">
-            <a
-              href={`/api/documents/${row.id}/download`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground shadow-sm transition hover:opacity-[0.92]"
-            >
-              Download PDF
-            </a>
+            {canDownload ?? true ? (
+              <a
+                href={`/api/documents/${row.id}/download`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground shadow-sm transition hover:opacity-[0.92]"
+              >
+                Download PDF
+              </a>
+            ) : null}
             {canEdit ? (
               <Link
                 href={`/documents/${row.id}/edit`}

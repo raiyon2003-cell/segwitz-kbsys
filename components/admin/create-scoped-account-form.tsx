@@ -8,6 +8,17 @@ import { Button, Input } from "@/components/ui";
 import type { DocumentFormOptionSets } from "@/lib/data/document-form-options";
 import type { DocumentPickerRow } from "@/lib/data/documents";
 
+const FALLBACK_DEPARTMENTS = [
+  "HR",
+  "Finance",
+  "Management",
+  "Operations",
+  "Legal",
+  "IT",
+  "Administration",
+  "Other",
+];
+
 function divisionName(
   options: DocumentFormOptionSets,
   divisionId: string,
@@ -30,6 +41,11 @@ export function CreateScopedAccountForm({
   const [selectedDeptIds, setSelectedDeptIds] = useState<Set<string>>(
     () => new Set(),
   );
+  const departmentDropdown = useMemo(() => {
+    const dynamic = departments.map((d) => d.name).filter(Boolean);
+    const values = dynamic.length > 0 ? dynamic : FALLBACK_DEPARTMENTS;
+    return Array.from(new Set(values));
+  }, [departments]);
 
   const departments = [...options.departments].sort((a, b) =>
     a.name.localeCompare(b.name),
@@ -110,6 +126,54 @@ export function CreateScopedAccountForm({
         <p className="text-xs text-foreground-muted">
           Self-signup defaults to member; scoped roles are assigned here by admins.
         </p>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium text-foreground" htmlFor="cv-department">
+          Department
+        </label>
+        <select
+          id="cv-department"
+          name="department"
+          className="flex h-10 w-full max-w-md rounded-md border border-input-border bg-input-background px-3 py-2 text-sm shadow-inner shadow-black/[4%] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          defaultValue=""
+          required
+        >
+          <option value="" disabled>
+            Select department...
+          </option>
+          {departmentDropdown.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="space-y-2">
+        <p className="text-sm font-medium text-foreground">Document permissions</p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="can_view" defaultChecked />
+            View Documents
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="can_upload" defaultChecked />
+            Upload Documents
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="can_edit" defaultChecked />
+            Edit Documents
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="can_delete" defaultChecked />
+            Delete Documents
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="can_download" defaultChecked />
+            Download Documents
+          </label>
+        </div>
       </div>
 
       <div className="space-y-2">

@@ -8,9 +8,11 @@ import {
   assertDepartmentAccessible,
 } from "@/lib/data/access-control";
 import {
+  canDownloadDocuments,
   canDeleteOrArchiveDocuments,
   canEditDocumentRecords,
   canMutateOrgReferences,
+  canViewDocuments,
 } from "@/lib/auth/rbac";
 import { getDepartmentById } from "@/lib/data/departments";
 import { getDocumentsForDepartmentLibrary } from "@/lib/data/documents";
@@ -38,6 +40,9 @@ export default async function DepartmentLibraryPage({
   }
 
   const { profile } = await getCachedSessionProfile();
+  if (!canViewDocuments(profile)) {
+    redirect("/");
+  }
   const dept = await getDepartmentById(id);
   if (!dept) notFound();
 
@@ -49,6 +54,7 @@ export default async function DepartmentLibraryPage({
   const rows = await getDocumentsForDepartmentLibrary(id);
   const canEditDocs = canEditDocumentRecords(profile);
   const canArchiveDocs = canDeleteOrArchiveDocuments(profile);
+  const canDownload = canDownloadDocuments(profile);
   const showDeptAdminLinks = canMutateOrgReferences(profile);
 
   const divisionName = dept.divisions?.name ?? "Division";
@@ -97,6 +103,7 @@ export default async function DepartmentLibraryPage({
               rows={rows}
               canEdit={canEditDocs}
               canArchive={canArchiveDocs}
+              canDownload={canDownload}
             />
           )}
         </CardContent>

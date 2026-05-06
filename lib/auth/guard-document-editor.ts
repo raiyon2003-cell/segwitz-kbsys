@@ -1,5 +1,6 @@
 import "server-only";
 
+import { canDeleteOrArchiveDocuments, canEditDocumentRecords, canUploadDocuments } from "@/lib/auth/rbac";
 import { getCachedSessionProfile } from "@/lib/auth/session";
 
 /** Upload / create documents (admin, manager, or member). */
@@ -8,15 +9,10 @@ export async function guardDocumentUploader(): Promise<
   | { denied: false }
 > {
   const { profile } = await getCachedSessionProfile();
-  if (
-    profile.role !== "admin" &&
-    profile.role !== "manager" &&
-    profile.role !== "member"
-  ) {
+  if (!canUploadDocuments(profile)) {
     return {
       denied: true,
-      message:
-        "Only administrators, managers, and members can upload documents.",
+      message: "You do not have permission to upload documents.",
     };
   }
   return { denied: false };
@@ -28,15 +24,24 @@ export async function guardDocumentEditor(): Promise<
   | { denied: false }
 > {
   const { profile } = await getCachedSessionProfile();
-  if (
-    profile.role !== "admin" &&
-    profile.role !== "manager" &&
-    profile.role !== "member"
-  ) {
+  if (!canEditDocumentRecords(profile)) {
     return {
       denied: true,
-      message:
-        "Only administrators, managers, and members can edit or archive repository documents.",
+      message: "You do not have permission to edit documents.",
+    };
+  }
+  return { denied: false };
+}
+
+export async function guardDocumentDelete(): Promise<
+  | { denied: true; message: string }
+  | { denied: false }
+> {
+  const { profile } = await getCachedSessionProfile();
+  if (!canDeleteOrArchiveDocuments(profile)) {
+    return {
+      denied: true,
+      message: "You do not have permission to delete documents.",
     };
   }
   return { denied: false };

@@ -30,10 +30,18 @@ export async function createScopedAccountAction(
 
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
+  const department = String(formData.get("department") ?? "").trim();
   const departmentIds = formData
     .getAll("department_id")
     .map(String)
     .filter(Boolean);
+  const documentPermissions = {
+    can_view: formData.get("can_view") === "on",
+    can_upload: formData.get("can_upload") === "on",
+    can_edit: formData.get("can_edit") === "on",
+    can_delete: formData.get("can_delete") === "on",
+    can_download: formData.get("can_download") === "on",
+  };
 
   const documentIdsRaw = formData
     .getAll("document_id")
@@ -63,6 +71,9 @@ export async function createScopedAccountAction(
 
   if (!email.includes("@")) {
     return { ok: false, message: "Enter a valid email address." };
+  }
+  if (!department) {
+    return { ok: false, message: "Select a department." };
   }
   if (password.length < 8) {
     return { ok: false, message: "Password must be at least 8 characters." };
@@ -94,7 +105,11 @@ export async function createScopedAccountAction(
   const supabase = await createSupabaseServerClient();
   const { error: roleErr } = await supabase
     .from("profiles")
-    .update({ role: accountRole })
+    .update({
+      role: accountRole,
+      department,
+      document_permissions: documentPermissions,
+    })
     .eq("id", userId);
 
   if (roleErr) {

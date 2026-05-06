@@ -32,6 +32,8 @@ export async function getSessionProfile(): Promise<{
     full_name: null,
     avatar_url: null,
     role: "member",
+    department: null,
+    document_permissions: null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
