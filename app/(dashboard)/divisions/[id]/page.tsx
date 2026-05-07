@@ -7,6 +7,7 @@ import { getCachedSessionProfile } from "@/lib/auth/session";
 import { assertDivisionAccessible } from "@/lib/data/access-control";
 import {
   canDownloadDocuments,
+  canDeleteDocuments,
   canDeleteOrArchiveDocuments,
   canEditDocumentRecords,
   canMutateOrgReferences,
@@ -52,6 +53,7 @@ export default async function DivisionLibraryPage({
   const rows = await getDocumentsForDivisionLibrary(id);
   const canEditDocs = canEditDocumentRecords(profile);
   const canArchiveDocs = canDeleteOrArchiveDocuments(profile);
+  const canDeleteDocs = canDeleteDocuments(profile);
   const canDownload = canDownloadDocuments(profile);
   const showDivisionAdminLinks = canMutateOrgReferences(profile);
 
@@ -101,6 +103,7 @@ export default async function DivisionLibraryPage({
               canEdit={canEditDocs}
               canArchive={canArchiveDocs}
               canDownload={canDownload}
+              canDelete={canDeleteDocs}
             />
           )}
         </CardContent>

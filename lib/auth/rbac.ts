@@ -51,6 +51,10 @@ export function canDeleteOrArchiveDocuments(profile: Profile): boolean {
   return profile.role === "admin" || profile.role === "member";
 }
 
+export function canDeleteDocuments(profile: Profile): boolean {
+  return profile.role === "admin";
+}
+
 export function canViewDocuments(profile: Profile): boolean {
   const explicit = hasExplicitPermission(profile, "can_view");
   if (explicit !== null) return explicit;

@@ -10,6 +10,7 @@ import {
 } from "@/lib/activity";
 import {
   guardDocumentDelete,
+  guardDocumentPermanentDelete,
   guardDocumentEditor,
   guardDocumentUploader,
 } from "@/lib/auth/guard-document-editor";
@@ -376,6 +377,57 @@ export async function archiveDocument(formData: FormData): Promise<ActionResult>
     action: "status_change",
     details: { from: before.status, to: "archived" as const },
   });
+
+  revalidateAfterDocumentMutation({ documentId: id });
+  return { ok: true };
+}
+
+export async function deleteDocument(formData: FormData): Promise<ActionResult> {
+  const gate = await guardDocumentPermanentDelete();
+  if (gate.denied) return { ok: false, error: gate.message };
+
+  const id = String(formData.get("id") ?? "").trim();
+  if (!id) return { ok: false, error: "Missing document id." };
+
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Not authenticated." };
+
+  const { data: existing, error: fetchErr } = await supabase
+    .from("documents")
+    .select("id, storage_object_path")
+    .eq("id", id)
+    .maybeSingle();
+  if (fetchErr || !existing) {
+    return { ok: false, error: fetchErr?.message ?? "Document not found." };
+  }
+
+  // Explicit cleanup for document grants before deleting the document row.
+  const { error: grantErr } = await supabase
+    .from("profile_document_access")
+    .delete()
+    .eq("document_id", id);
+  if (grantErr) {
+    return { ok: false, error: grantErr.message };
+  }
+
+  const { error: delErr } = await supabase.from("documents").delete().eq("id", id);
+  if (delErr) {
+    return { ok: false, error: delErr.message };
+  }
+
+  // Best effort storage cleanup for the backing PDF.
+  try {
+    await deletePdfForDocument(supabase, String(existing.storage_object_path));
+  } catch {
+    return {
+      ok: false,
+      error:
+        "Document record was removed, but deleting the stored file failed. Please check storage.",
+    };
+  }
 
   revalidateAfterDocumentMutation({ documentId: id });
   return { ok: true };

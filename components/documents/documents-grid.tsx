@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DocumentArchiveButton } from "@/components/documents/document-archive-button";
+import { DocumentDeleteButton } from "@/components/documents/document-delete-button";
 import { DocumentStatusBadge } from "@/components/documents/document-status";
 import type { DocumentListEmbed } from "@/types/documents";
 
@@ -16,11 +17,13 @@ export function DocumentsGrid({
   canEdit,
   canArchive,
   canDownload,
+  canDelete,
 }: {
   rows: DocumentListEmbed[];
   canEdit: boolean;
   canArchive: boolean;
   canDownload?: boolean;
+  canDelete?: boolean;
 }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -72,6 +75,7 @@ export function DocumentsGrid({
             {canArchive && row.status !== "archived" ? (
               <DocumentArchiveButton documentId={row.id} />
             ) : null}
+            {canDelete ? <DocumentDeleteButton documentId={row.id} /> : null}
           </div>
         </article>
       ))}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { DocumentArchiveButton } from "@/components/documents/document-archive-button";
+import { DocumentDeleteButton } from "@/components/documents/document-delete-button";
 import { DocumentUploadSuccessBanner } from "@/components/documents/document-upload-success-banner";
 import { DocumentStatusBadge } from "@/components/documents/document-status";
 import { DocumentsBrowseNav } from "@/components/documents/documents-browse-nav";
@@ -12,6 +13,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
 import {
   canDownloadDocuments,
+  canDeleteDocuments,
   canDeleteOrArchiveDocuments,
   canEditDocumentRecords,
   canUploadDocuments,
@@ -72,6 +74,7 @@ export default async function DocumentsPage({
   const canUpload = canUploadDocuments(profile);
   const canEditDocs = canEditDocumentRecords(profile);
   const canArchiveDocs = canDeleteOrArchiveDocuments(profile);
+  const canDeleteDocs = canDeleteDocuments(profile);
   const canDownload = canDownloadDocuments(profile);
   const canView = canViewDocuments(profile);
   if (!canView) {
@@ -266,6 +269,7 @@ export default async function DocumentsPage({
                     canEdit={canEditDocs}
                     canArchive={canArchiveDocs}
                     canDownload={canDownload}
+                    canDelete={canDeleteDocs}
                   />
                 )
               ) : rows.length === 0 ? (
@@ -281,7 +285,7 @@ export default async function DocumentsPage({
                   rows={rows}
                   columns={columns}
                   actions={
-                    canEditDocs || canArchiveDocs
+                    canEditDocs || canArchiveDocs || canDeleteDocs
                       ? (row) => (
                           <div className="flex flex-col items-end gap-2 sm:flex-row sm:items-center">
                             {canEditDocs ? (
@@ -294,6 +298,9 @@ export default async function DocumentsPage({
                             ) : null}
                             {canArchiveDocs && row.status !== "archived" ? (
                               <DocumentArchiveButton documentId={row.id} />
+                            ) : null}
+                            {canDeleteDocs ? (
+                              <DocumentDeleteButton documentId={row.id} />
                             ) : null}
                           </div>
                         )

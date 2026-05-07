@@ -1,6 +1,10 @@
 import "server-only";
 
-import { canDeleteOrArchiveDocuments, canEditDocumentRecords, canUploadDocuments } from "@/lib/auth/rbac";
+import {
+  canDeleteOrArchiveDocuments,
+  canEditDocumentRecords,
+  canUploadDocuments,
+} from "@/lib/auth/rbac";
 import { getCachedSessionProfile } from "@/lib/auth/session";
 
 /** Upload / create documents (admin, manager, or member). */
@@ -42,6 +46,20 @@ export async function guardDocumentDelete(): Promise<
     return {
       denied: true,
       message: "You do not have permission to delete documents.",
+    };
+  }
+  return { denied: false };
+}
+
+export async function guardDocumentPermanentDelete(): Promise<
+  | { denied: true; message: string }
+  | { denied: false }
+> {
+  const { profile } = await getCachedSessionProfile();
+  if (profile.role !== "admin") {
+    return {
+      denied: true,
+      message: "Only administrators can permanently delete documents.",
     };
   }
   return { denied: false };

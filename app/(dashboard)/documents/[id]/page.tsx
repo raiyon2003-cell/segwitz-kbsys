@@ -4,8 +4,10 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { DocumentDetailMeta } from "@/components/documents/document-detail-meta";
+import { DocumentDeleteButton } from "@/components/documents/document-delete-button";
 import { Button } from "@/components/ui/button";
 import {
+  canDeleteDocuments,
   canDownloadDocuments,
   canEditDocumentRecords,
   canViewDocuments,
@@ -144,6 +146,7 @@ export default async function DocumentDetailPage({
     updatedFlag === "true";
 
   const canEditRecord = canEditDocumentRecords(profile);
+  const canDelete = canDeleteDocuments(profile);
   const canDownload = canDownloadDocuments(profile);
   const canView = canViewDocuments(profile);
   if (!canView) {
@@ -221,6 +224,9 @@ export default async function DocumentDetailPage({
               <a href={`/api/documents/${doc.id}/download`}>
                 <Button className="gap-2">Download PDF</Button>
               </a>
+            ) : null}
+            {canDelete ? (
+              <DocumentDeleteButton documentId={doc.id} redirectTo="/documents" />
             ) : null}
           </div>
         </header>

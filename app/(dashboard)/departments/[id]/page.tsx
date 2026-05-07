@@ -9,6 +9,7 @@ import {
 } from "@/lib/data/access-control";
 import {
   canDownloadDocuments,
+  canDeleteDocuments,
   canDeleteOrArchiveDocuments,
   canEditDocumentRecords,
   canMutateOrgReferences,
@@ -54,6 +55,7 @@ export default async function DepartmentLibraryPage({
   const rows = await getDocumentsForDepartmentLibrary(id);
   const canEditDocs = canEditDocumentRecords(profile);
   const canArchiveDocs = canDeleteOrArchiveDocuments(profile);
+  const canDeleteDocs = canDeleteDocuments(profile);
   const canDownload = canDownloadDocuments(profile);
   const showDeptAdminLinks = canMutateOrgReferences(profile);
 
@@ -104,6 +106,7 @@ export default async function DepartmentLibraryPage({
               canEdit={canEditDocs}
               canArchive={canArchiveDocs}
               canDownload={canDownload}
+              canDelete={canDeleteDocs}
             />
           )}
         </CardContent>
