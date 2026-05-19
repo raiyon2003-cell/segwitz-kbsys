@@ -76,7 +76,7 @@ export default async function AdminAccessPage() {
   ];
 
   return (
-    <main className="px-6 py-8 lg:px-10">
+    <main className="space-y-8 animate-fade-in">
       <PageHeader
         title="Access control"
         description="Create scoped accounts (viewer, employee, manager), assign departments, and optionally restrict documents."

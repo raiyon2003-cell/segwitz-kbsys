@@ -10,21 +10,20 @@ import { getDashboardData } from "@/lib/data/dashboard";
 export default async function DashboardPage() {
   const d = await getDashboardData();
   return (
-    <main className="px-6 py-8 lg:px-10">
+    <div className="space-y-8">
       <PageHeader
+        eyebrow="Overview"
         title="Dashboard"
         description="Document library overview, recent uploads, and breakdowns by division and type."
       />
 
       {d.setupMessage ? (
         <div
-          className="mb-6 rounded-lg border border-brand-olive/40 bg-brand-olive/10 px-4 py-3 text-sm text-foreground"
+          className="rounded-xl border border-border/60 bg-muted/50 px-4 py-3 text-sm text-foreground ring-1 ring-border/30"
           role="alert"
         >
           <p className="font-semibold">Database setup required</p>
-          <p className="mt-1 text-foreground-muted">
-            {d.setupMessage}
-          </p>
+          <p className="mt-1 text-muted-foreground">{d.setupMessage}</p>
         </div>
       ) : null}
 
@@ -51,7 +50,7 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-2">
         <DashboardRecentUploads
           items={d.recent}
           emptyText="No documents yet. Upload one from the document library."
@@ -67,7 +66,7 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className="mt-4 max-w-3xl">
+      <div className="max-w-3xl">
         <DashboardDistributionCard
           title="By type"
           description="Count of documents per document type."
@@ -76,6 +75,6 @@ export default async function DashboardPage() {
           emptyText="No documents in the library yet."
         />
       </div>
-    </main>
+    </div>
   );
 }

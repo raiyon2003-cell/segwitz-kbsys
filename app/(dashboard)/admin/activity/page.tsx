@@ -29,7 +29,7 @@ export default async function AdminActivityPage({
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
-    <main className="px-6 py-8 lg:px-10">
+    <main className="space-y-8 animate-fade-in">
       <PageHeader
         title="Activity"
         description="Document uploads, updates, status changes, and file replacements. Visible to administrators only."

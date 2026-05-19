@@ -70,7 +70,7 @@ export default async function AdminAccessUserPage({
 
   if (!targetProfile) {
     return (
-      <main className="px-6 py-8 lg:px-10">
+      <main className="space-y-8 animate-fade-in">
         <div className="mb-6">
           <Link
             href="/admin/access"
@@ -144,7 +144,7 @@ export default async function AdminAccessUserPage({
   });
 
   return (
-    <main className="px-6 py-8 lg:px-10">
+    <main className="space-y-8 animate-fade-in">
       <div className="mb-6">
         <Link
           href="/admin/access"

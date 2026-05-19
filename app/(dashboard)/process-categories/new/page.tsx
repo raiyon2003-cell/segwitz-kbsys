@@ -16,7 +16,7 @@ export default async function NewProcessCategoryPage() {
   }
 
   return (
-    <main className="px-6 py-8 lg:px-10">
+    <main className="space-y-8 animate-fade-in">
       <PageHeader
         title="Create process category"
         description="Use consistent naming so teams can browse processes predictably."

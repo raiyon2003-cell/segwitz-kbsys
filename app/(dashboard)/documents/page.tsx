@@ -152,7 +152,7 @@ export default async function DocumentsPage({
   const needsDeptForDocs = Boolean(parsed.divisionId && !parsed.departmentId);
 
   return (
-    <main className="min-h-[calc(100vh-4rem)] px-6 py-8 lg:px-10">
+    <main className="space-y-8 animate-fade-in min-h-[calc(100vh-3.5rem)]">
       <div className="mx-auto max-w-[1400px] space-y-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <PageHeader

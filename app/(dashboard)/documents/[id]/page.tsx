@@ -160,7 +160,7 @@ export default async function DocumentDetailPage({
   );
 
   return (
-    <main className="min-h-[calc(100vh-4rem)] bg-[linear-gradient(180deg,hsl(var(--surface-muted)/0.5)_0%,transparent_28%)] px-6 py-8 lg:px-10">
+    <main className="space-y-8 animate-fade-in">
       <div className="mx-auto max-w-[1480px] space-y-8">
         <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm">
           <Link

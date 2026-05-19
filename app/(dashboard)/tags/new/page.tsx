@@ -16,7 +16,7 @@ export default async function NewTagPage() {
   }
 
   return (
-    <main className="px-6 py-8 lg:px-10">
+    <main className="space-y-8 animate-fade-in">
       <PageHeader
         title="Create tag"
         description="Tags help teams slice content across divisions and departments."

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Script from "next/script";
+import { AppProviders } from "@/components/providers/app-providers";
 import { resolveMetadataBaseUrl } from "@/lib/metadata/metadata-base";
 import { cn } from "@/lib/utils";
 import "./globals.css";
@@ -17,28 +19,41 @@ export const viewport = {
   initialScale: 1,
 };
 
+const themeInitScript = `
+(function () {
+  try {
+    var k = 'segwitz-kb-theme';
+    var t = localStorage.getItem(k);
+    var d = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var theme = t === 'dark' || t === 'light' ? t : (d ? 'dark' : 'light');
+    document.documentElement.classList.add(theme);
+  } catch (e) {
+    document.documentElement.classList.add('light');
+  }
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className="h-full" suppressHydrationWarning>
       <head>
-        {/*
-          Fallback: same Tailwind build as app/globals.css, served from /public.
-          If Next’s chunked CSS fails to load (cache, proxy, adblock), the UI
-          still renders with design tokens and utilities.
-        */}
-        {/* eslint-disable-next-line @next/next/no-css-tags -- static /public bundle; not a duplicate app import */}
+        <Script id="theme-init" strategy="beforeInteractive">
+          {themeInitScript}
+        </Script>
+        {/* Pre-built Tailwind bundle — ensures styles load even if Next dev CSS chunk is missing */}
+        {/* eslint-disable-next-line @next/next/no-css-tags */}
         <link rel="stylesheet" href="/kb-styles.css" />
       </head>
       <body
         className={cn(
-          "min-h-full bg-surface text-foreground antialiased",
+          "min-h-full bg-background text-foreground antialiased",
         )}
       >
-        {children}
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

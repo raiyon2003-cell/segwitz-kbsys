@@ -19,7 +19,7 @@ export default async function NewDepartmentPage() {
   const divisions = await getDivisionOptions();
 
   return (
-    <main className="px-6 py-8 lg:px-10">
+    <main className="space-y-8 animate-fade-in">
       <PageHeader
         title="Create department"
         description="Attach each department to exactly one division."

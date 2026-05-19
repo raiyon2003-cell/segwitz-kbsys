@@ -28,10 +28,10 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           id={inputId}
           ref={ref}
           className={cn(
-            "flex h-10 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-foreground placeholder:text-foreground-faint shadow-sm",
-            "transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-surface",
+            "flex h-10 w-full rounded-lg border border-input/90 bg-background/90 px-3 py-2 text-sm text-foreground shadow-sm placeholder:text-muted-foreground",
+            "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
             "disabled:cursor-not-allowed disabled:opacity-50",
-            error && "border-red-500/80 focus-visible:ring-red-500/60",
+            error && "border-destructive/80 focus-visible:ring-destructive/60",
             className,
           )}
           aria-invalid={error ? true : undefined}
@@ -43,11 +43,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {error ? (
-          <p id={`${inputId}-error`} className="text-sm text-red-600 dark:text-red-400">
+          <p id={`${inputId}-error`} className="text-sm text-destructive">
             {error}
           </p>
         ) : hint ? (
-          <p id={`${inputId}-hint`} className="text-sm text-foreground-muted">
+          <p id={`${inputId}-hint`} className="text-sm text-muted-foreground">
             {hint}
           </p>
         ) : null}

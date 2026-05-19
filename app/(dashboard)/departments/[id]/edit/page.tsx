@@ -53,7 +53,7 @@ export default async function EditDepartmentPage({ params }: Props) {
   }
 
   return (
-    <main className="px-6 py-8 lg:px-10">
+    <main className="space-y-8 animate-fade-in">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <PageHeader
           title="Edit department"

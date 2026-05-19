@@ -11,7 +11,7 @@ export function Table({
   ...props
 }: TableHTMLAttributes<HTMLTableElement>) {
   return (
-    <div className="relative w-full overflow-x-auto rounded-lg border border-border-subtle bg-surface shadow-shell">
+    <div className="surface-table relative w-full overflow-x-auto">
       <table
         className={cn(
           "w-full caption-bottom border-collapse text-sm",
@@ -30,7 +30,7 @@ export function TableHeader({
   return (
     <thead
       className={cn(
-        "border-b border-border-subtle bg-surface-muted/70 [&_tr]:border-border-subtle",
+        "border-b border-border/60 bg-muted/50 [&_tr]:border-border/40",
         className,
       )}
       {...props}
@@ -54,7 +54,7 @@ export function TableRow({
   return (
     <tr
       className={cn(
-        "border-b border-border-subtle transition-all hover:bg-surface-muted/50 data-[state=selected]:bg-surface-muted",
+        "border-b border-border/40 transition-colors hover:bg-muted/40 data-[state=selected]:bg-muted/60",
         className,
       )}
       {...props}
@@ -69,7 +69,7 @@ export function TableHead({
   return (
     <th
       className={cn(
-        "h-11 px-4 text-left align-middle text-xs font-bold uppercase tracking-wide text-foreground-muted",
+        "h-11 px-4 text-left align-middle text-xs font-semibold uppercase tracking-wide text-muted-foreground",
         className,
       )}
       {...props}

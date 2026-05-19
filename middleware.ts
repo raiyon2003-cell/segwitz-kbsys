@@ -106,6 +106,6 @@ export const config = {
      * Skip Next internals (all of /_next/* — CSS, JS, maps) and static images.
      * Prevents auth logic from touching asset requests.
      */
-    "/((?!_next/|favicon\\.ico|[^?]*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/|favicon\\.ico|kb-styles\\.css|[^?]*\\.(?:svg|png|jpg|jpeg|gif|webp|css)$).*)",
   ],
 };

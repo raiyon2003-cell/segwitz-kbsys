@@ -16,7 +16,7 @@ export default async function NewDivisionPage() {
   }
 
   return (
-    <main className="px-6 py-8 lg:px-10">
+    <main className="space-y-8 animate-fade-in">
       <PageHeader
         title="Create division"
         description="Add a division so departments and documents can reference it."

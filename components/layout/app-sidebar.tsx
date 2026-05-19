@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Building2,
+  ChevronLeft,
+  ChevronRight,
   FileText,
   History,
   KeyRound,
@@ -40,7 +42,15 @@ const NavIcon = memo(function NavIcon({ href }: { href: string }) {
   return <Icon className="size-[18px] shrink-0" aria-hidden />;
 });
 
-const NavLink = memo(function NavLink({ item }: { item: NavItem }) {
+const NavLink = memo(function NavLink({
+  item,
+  collapsed,
+  onNavigate,
+}: {
+  item: NavItem;
+  collapsed: boolean;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
   const active =
     item.href === "/"
@@ -50,15 +60,18 @@ const NavLink = memo(function NavLink({ item }: { item: NavItem }) {
   return (
     <Link
       href={item.href}
+      onClick={onNavigate}
+      title={collapsed ? item.label : undefined}
       className={cn(
-        "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold",
+        "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all",
         active
-          ? "bg-brand-lime text-white shadow-sm ring-1 ring-brand-lime/70"
-          : "text-white/80 hover:bg-brand-steel/75 hover:text-white",
+          ? "bg-sidebar-active text-white shadow-md ring-1 ring-white/10"
+          : "text-sidebar-foreground/80 hover:bg-white/10 hover:text-white",
+        collapsed && "justify-center px-2",
       )}
     >
       <NavIcon href={item.href} />
-      <span>{item.label}</span>
+      {!collapsed ? <span className="truncate">{item.label}</span> : null}
     </Link>
   );
 });
@@ -68,64 +81,127 @@ const SCOPED_STAFF_MAIN_HREFS = new Set(["/", "/documents"]);
 function AppSidebarComponent({
   profile,
   viewerDepartmentLinks = [],
+  collapsed,
+  mobileOpen,
+  onMobileClose,
+  onToggleCollapse,
 }: {
   profile: Profile;
   viewerDepartmentLinks?: ViewerDepartmentLink[];
+  collapsed: boolean;
+  mobileOpen: boolean;
+  onMobileClose?: () => void;
+  onToggleCollapse?: () => void;
 }) {
   const mainItems = shouldUseReducedStaffNav(profile)
     ? MAIN_NAV.filter((item) => SCOPED_STAFF_MAIN_HREFS.has(item.href))
     : MAIN_NAV;
 
+  const displayName =
+    profile.full_name?.trim() || profile.email?.trim() || "User";
+
   return (
-    <aside className="flex w-64 shrink-0 flex-col border-r border-brand-teal/60 bg-brand-teal text-white md:w-[260px]">
-      <div className="flex h-14 items-center gap-2 border-b border-brand-steel/70 px-5">
-        <div className="flex size-8 items-center justify-center rounded-md bg-accent text-xs font-bold text-accent-foreground">
-          KB
-        </div>
-        <div className="flex flex-col leading-tight">
-          <span className="text-sm font-bold tracking-tight text-white">Knowledge Base</span>
-          <span className="text-xs text-white/70">Segwitz</span>
-        </div>
+    <aside
+      className={cn(
+        "sidebar-gradient fixed inset-y-0 left-0 z-50 flex flex-col border-r border-white/10 text-sidebar-foreground shadow-xl ring-1 ring-white/5 transition-[width,transform] duration-200 lg:static lg:translate-x-0",
+        collapsed ? "w-[76px]" : "w-64",
+        mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+      )}
+    >
+      <div
+        className={cn(
+          "flex h-14 items-center border-b border-white/10 px-4",
+          collapsed ? "justify-center px-2" : "gap-3",
+        )}
+      >
+        {!collapsed ? (
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">
+              Segwitz
+            </p>
+            <p className="truncate text-sm font-bold text-white">Knowledge Base</p>
+            <div className="mt-1 h-0.5 w-8 rounded-full bg-accent" aria-hidden />
+          </div>
+        ) : (
+          <div className="flex size-9 items-center justify-center rounded-lg bg-sidebar-active text-xs font-bold text-white">
+            KB
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={onToggleCollapse}
+          className="hidden size-8 items-center justify-center rounded-lg border border-white/15 text-white/80 hover:bg-white/10 lg:inline-flex"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? (
+            <ChevronRight className="size-4" />
+          ) : (
+            <ChevronLeft className="size-4" />
+          )}
+        </button>
       </div>
-      <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Main">
+
+      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3" aria-label="Main">
         {mainItems.map((item) => (
-          <NavLink key={item.href} item={item} />
+          <NavLink
+            key={item.href}
+            item={item}
+            collapsed={collapsed}
+            onNavigate={onMobileClose}
+          />
         ))}
         {shouldUseReducedStaffNav(profile) &&
         viewerDepartmentLinks.length > 0 ? (
           <>
-            <p className="px-3 pb-1 pt-4 text-xs font-bold uppercase tracking-wide text-white/60">
-              Departments
-            </p>
+            {!collapsed ? (
+              <p className="px-3 pb-1 pt-4 text-[10px] font-bold uppercase tracking-widest text-white/45">
+                Departments
+              </p>
+            ) : null}
             {viewerDepartmentLinks.map((d) => (
               <NavLink
                 key={d.id}
                 item={{ href: `/departments/${d.id}`, label: d.name }}
+                collapsed={collapsed}
+                onNavigate={onMobileClose}
               />
             ))}
           </>
         ) : null}
         {profile.role === "admin" ? (
           <>
-            <p className="px-3 pb-1 pt-4 text-xs font-bold uppercase tracking-wide text-white/60">
-              Admin
-            </p>
+            {!collapsed ? (
+              <p className="px-3 pb-1 pt-4 text-[10px] font-bold uppercase tracking-widest text-white/45">
+                Admin
+              </p>
+            ) : null}
             {ADMIN_NAV.map((item) => (
-              <NavLink key={item.href} item={item} />
+              <NavLink
+                key={item.href}
+                item={item}
+                collapsed={collapsed}
+                onNavigate={onMobileClose}
+              />
             ))}
           </>
         ) : null}
       </nav>
-      <div className="border-t border-brand-steel/70 p-4">
-        <div className="mb-3 flex flex-wrap items-center gap-2">
-          <span className="rounded-md bg-brand-steel/70 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-white/90 ring-1 ring-white/20">
-            {profile.role}
-          </span>
-        </div>
-        <SignOutButton className="mb-3 w-full justify-center border-white/30 text-white hover:bg-white/10 hover:text-white" />
-        <p className="text-xs leading-relaxed text-white/65">
-          Roles are stored on your profile and managed by admins.
-        </p>
+
+      <div className="border-t border-white/10 p-4">
+        {!collapsed ? (
+          <>
+            <p className="truncate text-sm font-semibold text-white">{displayName}</p>
+            <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wide text-white/55">
+              {profile.role}
+            </p>
+          </>
+        ) : null}
+        <SignOutButton
+          className={cn(
+            "mt-3 w-full justify-center border-white/25 text-white hover:bg-white/10 hover:text-white",
+            collapsed && "px-2",
+          )}
+        />
       </div>
     </aside>
   );

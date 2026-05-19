@@ -49,7 +49,7 @@ export default async function EditDocumentPage({ params }: Props) {
   }
 
   return (
-    <main className="px-6 py-8 lg:px-10">
+    <main className="space-y-8 animate-fade-in">
       <div className="mx-auto max-w-3xl">
         <PageHeader
           title="Edit document"
